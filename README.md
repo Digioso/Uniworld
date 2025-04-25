@@ -25,11 +25,15 @@ Führe einen Rechtsklick auf die install.bat Datei aus und wähle "Als Administr
 Danach kann das Programm durch einen Doppelklick auf ucm.pl ausgeführt werden. Ggf. musst du noch einstellen, dass .pl Dateien mit Perl ausgeführt werden.
 
 Ubuntu Linux:
-Führe den folgenden Befehl in einem Terminal aus:
+Führe die folgenden Befehle in einem Terminal aus:
+chmod +x ucm.pl
+chmod +x install_ubuntu.sh
 sudo ./install_ubuntu.sh
 Anschließend kann die ucm.pl Datei ausgeführt werden.
 
 Andere Linux-Distributionen:
-Führe den folgenden Befehl in einem Terminal aus:
+Führe die folgenden Befehle in einem Terminal aus:
+chmod +x ucm.pl
+chmod +x install_ubuntu.sh
 sudo ./install_linux.sh
 Anschließend kann die ucm.pl Datei ausgeführt werden.
