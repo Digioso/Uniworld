@@ -11,29 +11,29 @@ Perplexity
 
 Installation:
 
-Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/tag/ucm
-Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.
+Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/tag/ucm<br>
+Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.<br>
 Manche Virenscanner (z.B. Avast) blockieren jedoch die Ausführung. Ich habe die Datei an Avast zur Analyse gesendet.
 
-Falls du das Skript lieber direkt ausführen möchtest:
+Falls du das Skript lieber direkt ausführen möchtest:<br>
 Lade den Quellcode und die Bilder von Github herunter und platziere sie in einem Verzeichnis deiner Wahl.
 
 Windows:
-Lade dir StrawberryPerl von https://www.strawberryperl.com herunter. Bitte installiere es nach C:\strawberry
-Ich habe die Erfahrung gemacht, dass andere Installationspfade ggf. zu Problemen führen.
-Führe einen Rechtsklick auf die install.bat Datei aus und wähle "Als Administrator ausführen". Dies installiert alle benötigten Perl-Module.
-Danach kann das Programm durch einen Doppelklick auf ucm.pl ausgeführt werden. Ggf. musst du noch einstellen, dass .pl Dateien mit Perl ausgeführt werden.
+Lade dir StrawberryPerl von https://www.strawberryperl.com herunter. Bitte installiere es nach C:\strawberry<br>
+Ich habe die Erfahrung gemacht, dass andere Installationspfade ggf. zu Problemen führen.<br>
+Führe einen Rechtsklick auf die install.bat Datei aus und wähle "Als Administrator ausführen". Dies installiert alle benötigten Perl-Module.<br>
+Danach kann das Programm durch einen Doppelklick auf ucm.pl ausgeführt werden. Ggf. musst du noch einstellen, dass .pl Dateien mit Perl ausgeführt werden.<br>
 
-Ubuntu Linux:
-Führe die folgenden Befehle in einem Terminal aus:
-chmod +x ucm.pl
-chmod +x install_ubuntu.sh
-sudo ./install_ubuntu.sh
-Anschließend kann die ucm.pl Datei ausgeführt werden.
+Ubuntu Linux:<br>
+Führe die folgenden Befehle in einem Terminal aus:<br>
+chmod +x ucm.pl<br>
+chmod +x install_ubuntu.sh<br>
+sudo ./install_ubuntu.sh<br>
+Anschließend kann die ucm.pl Datei ausgeführt werden.<br>
 
-Andere Linux-Distributionen:
-Führe die folgenden Befehle in einem Terminal aus:
-chmod +x ucm.pl
-chmod +x install_ubuntu.sh
-sudo ./install_linux.sh
+Andere Linux-Distributionen:<br>
+Führe die folgenden Befehle in einem Terminal aus:<br>
+chmod +x ucm.pl<br>
+chmod +x install_ubuntu.sh<br>
+sudo ./install_linux.sh<br>
 Anschließend kann die ucm.pl Datei ausgeführt werden.
