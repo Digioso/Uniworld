@@ -21,14 +21,14 @@ Führe die folgenden Befehle in einem Terminal aus:<br>
 chmod +x ucm.pl<br>
 chmod +x install_ubuntu.sh<br>
 sudo ./install_ubuntu.sh<br>
-Anschließend kann die ucm.pl Datei ausgeführt werden.<br>
+Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.<br>
 
 Andere Linux-Distributionen:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
 chmod +x ucm.pl<br>
 chmod +x install_ubuntu.sh<br>
 sudo ./install_linux.sh<br>
-Anschließend kann die ucm.pl Datei ausgeführt werden.
+Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.
 
 Dieses Tool wurde mit Hilfe von KI erstellt.<br>
 Genutzte KI:<br>
