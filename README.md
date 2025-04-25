@@ -26,7 +26,7 @@ Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrow
 Andere Linux-Distributionen:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
 chmod +x ucm.pl<br>
-chmod +x install_ubuntu.sh<br>
+chmod +x install_linux.sh<br>
 sudo ./install_linux.sh<br>
 Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.
 
