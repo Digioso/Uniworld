@@ -1,7 +1,8 @@
 #!/usr/bin/sh
 cpan CPAN
 cpan PDF::API2
-set LC_ALL=C
-set LANG=C
+cpan Browser::Open
+export LC_ALL=C
+export LANG=C
 cpan Tk
 cpan Tk::Balloon

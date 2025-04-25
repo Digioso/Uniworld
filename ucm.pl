@@ -7,6 +7,7 @@ use POSIX;
 use Tk;
 use Tk::Scrollbar;
 use Tk::Pane;
+use Tk::Frame;
 use Tk::DialogBox;
 use Tk::Canvas;
 use Tk::Dialog;
@@ -16,24 +17,19 @@ use JSON;
 use PDF::API2;
 use List::Util qw(sum);
 use File::Basename;
+use Browser::Open;
+use Data::Dumper;
 use feature ('say', 'signatures');
 no warnings 'experimental::signatures';
-use Data::Dumper;
 
 # Global variables
 setlocale(LC_ALL, 'en_US.UTF-8');
 my $characters = {};
 my $current_character;
-my $next_id = 1;
+my $next_id = 1; # Character IDs
 
 binmode(STDOUT, ":utf8");
 binmode(STDERR, ":utf8");
-
-# Create main window
-my $mw = MainWindow->new;
-$mw->title("Uniworld Charakter-Manager");
-$mw->geometry("800x600");
-$mw->protocol('WM_DELETE_WINDOW', sub { exit_program() });
 
 # Attribute und Fertigkeiten
 my @char_attributes = ("Charisma", "Körperliche Verfassung", "Reaktion", "Verstand", "Willenskraft");
@@ -51,6 +47,109 @@ my @avatar_skills_light = (
     "Craften", "Fernkampf","Heilen", "Konstitution", "Körperliches", "Machtnutzung", "Nahkampf",
     "Soziales", "Überreden", "Wahrnehmung", "Zeugs sammeln"
 );
+
+# Create main window
+my $mw = MainWindow->new;
+$mw->title("Uniworld Charakter-Manager");
+$mw->geometry("550x250");
+$mw->protocol('WM_DELETE_WINDOW', sub { exit_program() });
+my $scrolled_main_area  = $mw->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe' # Scrollbars nur rechts/unten bei Bedarf
+    )->pack(-fill => 'both', -expand => 1); # Füllt das gesamte Dialogfenster
+
+
+my $content_container = $scrolled_main_area->Subwidget('scrolled');
+	 
+my $link_description = '© 2025 Andreas & Manuela Balthasar GbR - www.andreasbalthasar.de';
+my $target_url = 'https://www.andreasbalthasar.de';
+
+my @default_font_config_list = $content_container->fontActual('TkDefaultFont');
+my %link_font_spec_hash = @default_font_config_list;
+$link_font_spec_hash{-underline} = 1;
+my $link_font;
+eval {
+    $link_font = $mw->fontCreate('linkFont', %link_font_spec_hash);
+};
+if ($@ || !defined $link_font) {
+    # Fallback auf einen einfachen unterstrichenen Font
+    my $fallback_font_family = $link_font_spec_hash{-family} || 'TkDefaultFont'; # Nimm Familie oder Default
+    eval {
+        $link_font = $content_container->fontCreate('linkFontFallback', -family => $fallback_font_family, -underline => 1);
+    };
+    # Wenn auch Fallback fehlschlägt, nimm die Default-Schrift
+    unless (defined $link_font) {
+        $link_font = 'TkDefaultFont'; # Name der Default-Schrift
+    }
+}
+
+my $link_label = $content_container->Label(
+    -text       => $link_description,
+    -foreground => 'blue',
+    -font       => $link_font,
+    -cursor     => 'hand2'
+)->pack(
+    -side => 'bottom', # Nimmt den unteren Rand ein
+    -fill => 'x',
+    -pady => [5, 2]
+);
+
+$link_label->bind('<Button-1>', sub {
+    my $success = eval { Browser::Open::open_browser($target_url); 1 };
+    unless ($success) {
+        my $error_msg = $@ || "Unbekannter Fehler";
+        $mw->messageBox(-title => "Fehler", -message => "Konnte URL '$target_url' nicht öffnen: $error_msg", -type => 'ok', -icon => 'error');
+}});
+
+my $btn_frame = $content_container->Frame()->pack(
+    -side => 'right',   # An die rechte Kante des *verbleibenden* Platzes (oberhalb des Links)
+    -fill => 'y',       # Füllt vertikal
+    -padx => 5,
+    -pady => 5
+);
+# Buttons innerhalb des btn_frame
+$btn_frame->Button(-text => 'Neuen Charakter erstellen', -command => \&create_character)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Charakter bearbeiten', -command => \&edit_character)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Charakter löschen', -command => \&delete_character)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Charaktere speichern', -command => \&save_characters)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Exportieren als PDF', -command => \&export_to_pdf)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Beenden', -command => \&exit_program)->pack(-fill => 'x', -pady=>1);
+
+
+# --- Linker Frame für die Liste (Parent: $content_container, PACKED THIRD mit side left) ---
+# Dieser Frame füllt den verbleibenden Platz links vom Button-Frame und oberhalb des Links
+my $list_frame = $content_container->Frame()->pack(
+    -side => 'left',
+    -fill => 'both',    # Füllt horizontal UND vertikal
+    -expand => 1,       # Erlaubt das Expandieren, um Platz zu füllen
+    -padx => 5,
+    -pady => 5
+);
+my $charlist_label = $list_frame->Label(-text => "Charaktere:")->pack(-side => 'top', -anchor => 'w');
+# Frame für Listbox (Kind von $list_frame)
+my $char_list_frame = $list_frame->Frame()->pack(-side => 'top', -fill => 'both', -expand => 1); # Nimmt restlichen Platz in list_frame ein
+my $listbox = $char_list_frame->Scrolled(
+    'Listbox',
+    -scrollbars => 'se',
+)->pack(-side => 'left', -fill => 'both', -expand => 1);
+$listbox->Subwidget('listbox')->bind('<Enter>', sub{$listbox->Subwidget('listbox')->focus()});
+$listbox->Subwidget('listbox')->bind('<Leave>', sub {$mw->focus();});
+$listbox->bind('<<ListboxSelect>>', \&select_character);
+
+# Load characters into listbox
+load_characters();
+update_character_list();
+
+# Main loop
+MainLoop();
+exit 0;
+
+sub get_script_dir
+{
+	my $dir = my $dirname = dirname(__FILE__);
+	$dir = (fileparse($0))[1] if($dir eq 'script');
+	return $dir;
+}
 
 # Funktion zum Erstellen von transparenten Rechtecken für Klickbereiche
 sub create_clickable_area{
@@ -218,8 +317,14 @@ sub manage_avatars {
 
 sub add_avatar {
 	my ($parent_dialog, $avatars_ref, $avatar_listbox, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods) = @_;
-    my $pre_dialog = $parent_dialog->Toplevel();
-	focus_dialog($pre_dialog, "Neuer Avatar - Grunddaten", $parent_dialog);
+    my $add_avatar = $parent_dialog->Toplevel();
+	$add_avatar->geometry("470x150");  # Set window size
+	focus_dialog($add_avatar, "Neuer Avatar - Grunddaten", $parent_dialog);
+	my $scrolled_area = $add_avatar->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe' # Scrollbars nur rechts/unten bei Bedarf
+    )->pack(-fill => 'both', -expand => 1); # Füllt das gesamte Dialogfenster
+	my $pre_dialog = $scrolled_area->Subwidget('scrolled');
 
     # Variablen für Eingabefelder
     my ($name, $welt, $angriffstyp, $skill_points) = ("", "", "Nahkampf", 13);
@@ -268,7 +373,7 @@ sub add_avatar {
                 return;
             }
 			$pre_dialog->messageBox(-type => 'Ok', -icon => 'info',	-title => 'Machtnutzung', -message => "Bei Machtnutzung bitte im nächsten Schritt die\nentsprechende Anzahl der Machtpunkte eintragen und Mächte hinzufügen.") if('Machtnutzung' eq $angriffstyp);
-            $pre_dialog->destroy();
+            $add_avatar->destroy();
             # Haupt-Charaktererstellung aufrufen
             main_avatar_creation($parent_dialog, $avatars_ref, $avatar_listbox, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods, $name, $welt, $angriffstyp, $skill_points);
         }
@@ -277,16 +382,21 @@ sub add_avatar {
     # Abbrechen-Button
     $pre_dialog->Button(
         -text => "Abbrechen",
-        -command => sub { $pre_dialog->destroy }
+        -command => sub { $add_avatar->destroy }
     )->grid(-row => 5, -columnspan => 2);
 }
 
 sub main_avatar_creation {
     my ($parent_dialog, $avatars_ref, $avatar_listbox, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods, $name, $welt, $angriffstyp, $skill_points) = @_;
 
-    my $avatar_dialog = $parent_dialog->Toplevel();
-    focus_dialog($avatar_dialog, "Avatar hinzufügen", $parent_dialog);
-    $avatar_dialog->geometry("950x800");  # Set window size
+    my $add_avatar = $parent_dialog->Toplevel();
+    focus_dialog($add_avatar, "Avatar hinzufügen", $parent_dialog);
+    $add_avatar->geometry("950x800");  # Set window size
+	my $scrolled_area = $add_avatar->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+    my $avatar_dialog = $scrolled_area->Subwidget('scrolled');
     my $spacer = $avatar_dialog->Label(-text => "", -width => 42)->grid(-row => 0, -column => 0);
 	my $balloon = $avatar_dialog->Balloon();
     my $row = 0;
@@ -457,7 +567,7 @@ sub main_avatar_creation {
 							$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 1);
 						}
 						elsif ($number < 12) {
-							if($number > 8 && $skillpunkt_entry->cget('-text') < 2)
+							if($number > 6 && $skillpunkt_entry->cget('-text') < 2)
 							{
 								$avatar_dialog->messageBox(
 								-type    => 'Ok',
@@ -642,7 +752,7 @@ sub main_avatar_creation {
     my $inventar_label = $avatar_dialog->Label(-text => "Inventarverwaltung")->grid(-row => 9, -column => 2, -columnspan => 2);
 
     # Charakterbild
-    my $dirname = dirname(__FILE__);
+    my $dirname = get_script_dir();
 
     unless (-e "$dirname/avatar.gif") {
         die "Fehler: Bilddatei avatar.gif konnte nicht gefunden werden.\n";
@@ -919,7 +1029,8 @@ sub main_avatar_creation {
 
 				# Update the Listbox only if the data has changed
 				$avatar_listbox->insert('end', $name_entry->get() . ' (' . $game_entry->get() . ')');
-				$avatar_dialog->destroy();
+				$parent_dialog->focus();
+				$add_avatar->destroy();
 			}
 		}
     )->grid(-row => $row, -column => 1);
@@ -942,13 +1053,19 @@ sub edit_avatar {
 
     my $avatar = $avatars_ref->[$index];
 
-    my $edit_dialog = $parent_dialog->Toplevel();
-    focus_dialog($edit_dialog, "Avatar bearbeiten", $parent_dialog);
-    
+    my $edit_avatar = $parent_dialog->Toplevel();
+    focus_dialog($edit_avatar, "Avatar bearbeiten", $parent_dialog);
+    my $scrolled_area = $edit_avatar->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe' # Scrollbars nur rechts/unten bei Bedarf
+    )->pack(-fill => 'both', -expand => 1); # Füllt das gesamte Dialogfenster
+
+    # --- NEU: Der eigentliche Inhalts-Frame ---
+    my $edit_dialog = $scrolled_area->Subwidget('scrolled');
 	
 	if($index == 0)
 	{
-		$edit_dialog->geometry("300x100");  # Set window size
+		$edit_avatar->geometry("300x100");  # Set window size
 		# Name
 		my $name_label = $edit_dialog->Label(-text => "Avatar-Name")->grid(-row => 0, -column => 0, -sticky => 'w');
 		my $name_entry = $edit_dialog->Entry(-textvariable => \$avatar->{name})->grid(-row => 0, -column => 1, -sticky => 'w');
@@ -962,13 +1079,13 @@ sub edit_avatar {
 				$avatar->{description} = $description_entry->get();
 				$avatar_listbox->delete($index);
 				$avatar_listbox->insert($index, $avatar->{name} . ' (' . $avatar->{game} . ')');
-				$edit_dialog->destroy();
+				$edit_avatar->destroy();
 			}
 		)->grid(-row => 2, -column => 1, -sticky => 'w');
 	}
 	else
 	{
-		$edit_dialog->geometry("950x800");  # Set window size
+		$edit_avatar->geometry("950x800");  # Set window size
 		my $spacer = $edit_dialog->Label(-text => "", -width => 42)->grid(-row => 0, -column => 0);
 		my $balloon = $edit_dialog->Balloon();
 		
@@ -1043,7 +1160,7 @@ sub edit_avatar {
 			{
 				my $input_window = $edit_dialog->Toplevel;
 				$input_window->configure(-width => 400);
-				focus_dialog($input_window, "Erfahrungspunkte hinzufügen", $parent_dialog);
+				focus_dialog($input_window, "XP hinzufügen", $parent_dialog);
 				my $xp_added = 0;
 				my $label_xp = $input_window->Label(-text => "Hinzugewonnene Erfahrungspunkte:")->pack;
 				my $entry_xp = $input_window->Entry(-textvariable => \$xp_added, -validate => 'key', -validatecommand => sub {
@@ -1060,7 +1177,6 @@ sub edit_avatar {
 						$input_window->update;
 						$mw->update;
 						$input_window->bind('<Escape>', sub { $input_window->destroy });
-						#$xp_added = $entry_xp->get();
 						if ($xp_added =~ /^\d+$/)
 						{
 							if(defined $xp_added && $xp_added > 0)
@@ -1452,7 +1568,7 @@ sub edit_avatar {
 								$sp_entry->configure(-text => $sp_entry->cget('-text') - 1);
 							}
 							elsif ($number < 12) {
-								if($number > 8 && $sp_entry->cget('-text') < 2)
+								if($number > 6 && $sp_entry->cget('-text') < 2)
 								{
 									$edit_dialog->messageBox(
 									-type    => 'Ok',
@@ -1610,7 +1726,7 @@ sub edit_avatar {
 		my $inventar_label = $edit_dialog->Label(-text => "Inventarverwaltung")->grid(-row => 9, -column => 2, -columnspan => 2);
 
 		# Charakterbild
-		my $dirname = dirname(__FILE__);
+		my $dirname = get_script_dir();
 
 		unless (-e "$dirname/avatar.gif") {
 			die "Fehler: Bilddatei avatar.gif konnte nicht gefunden werden.\n";
@@ -1789,7 +1905,8 @@ sub edit_avatar {
 				$avatar->{skill_mods} = { %skill_mods };
 				$avatar_listbox->delete($index);
 				$avatar_listbox->insert($index, $avatar->{name} . ' (' . $avatar->{game} . ')');
-				$edit_dialog->destroy();
+				$parent_dialog->focus();
+				$edit_avatar->destroy();
 			}
 		)->grid(-row => $row, -column => 1, -sticky => 'w');
 	}
@@ -1914,7 +2031,6 @@ sub add_talent {
 			{
 				$talent_listbox->insert('end', $talent);
 			}
-
 			$dialog->focus();  # Set focus back to dialog
 		}
 	}
@@ -2087,8 +2203,15 @@ sub delete_handicap {
 }
 
 sub create_character {
-    my $pre_dialog = $mw->Toplevel();
-	focus_dialog($pre_dialog, "Neuer Charakter - Grunddaten", $mw);
+    my $add_char = $mw->Toplevel();
+	$add_char->geometry("470x150");  # Set window size
+	focus_dialog($add_char, "Neuer Charakter - Grunddaten", $mw);
+
+	my $scrolled_area = $add_char->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+	my $pre_dialog = $scrolled_area->Subwidget('scrolled');
 
     # Variablen für Eingabefelder
     my ($name, $av_name, $attr_points, $skill_points) = ("", "", 5, 9);
@@ -2124,7 +2247,7 @@ sub create_character {
                     -title => 'Fehler', -message => "Bitte alle Felder ausfüllen!");
                 return;
             }
-            $pre_dialog->destroy();
+            $add_char->destroy();
             # Haupt-Charaktererstellung aufrufen
             main_character_creation($name, $av_name, $attr_points, $skill_points);
         }
@@ -2133,7 +2256,7 @@ sub create_character {
     # Abbrechen-Button
     $pre_dialog->Button(
         -text => "Abbrechen",
-        -command => sub { $pre_dialog->destroy }
+        -command => sub { $add_char->destroy }
     )->grid(-row => 5, -columnspan => 2);
 }
 
@@ -2141,9 +2264,16 @@ sub main_character_creation {
 	
 	my ($name, $av_name, $attr_points, $skill_points) = @_;
     
-    my $dialog = $mw->Toplevel();
-	focus_dialog($dialog, "Neuen Charakter erstellen", $mw);
-    $dialog->geometry("950x950");  # Width x Height in pixels
+    my $add_char = $mw->Toplevel();
+	focus_dialog($add_char, "Neuen Charakter erstellen", $mw);
+    $add_char->geometry("950x950");  # Width x Height in pixels
+	
+	my $scrolled_area = $add_char->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe' # Scrollbars nur rechts/unten bei Bedarf
+    )->pack(-fill => 'both', -expand => 1); # Füllt das gesamte Dialogfenster
+
+    my $dialog = $scrolled_area->Subwidget('scrolled');
 	my $balloon = $dialog->Balloon();
 	my $verstand_benutzt = 0;
     my $row = 0;
@@ -2479,8 +2609,8 @@ sub main_character_creation {
 	my $inventar_label = $dialog->Label(-text => "Inventarverwaltung")->grid(-row => $row, -column => 3);
 	
 	# Charakterbild
-	my $dirname = dirname(__FILE__);
-
+	my $dirname = get_script_dir();
+print "$dirname\n";
     unless (-e "$dirname/avatar.gif") {
         die "Fehler: Bilddatei avatar.gif konnte nicht gefunden werden.\n";
     }
@@ -2656,7 +2786,7 @@ sub main_character_creation {
 						}
 						elsif ($number < 12)
 						{
-							if($number > 8 && $skillpunkt_entry->cget('-text') < 2)
+							if($number > 6 && $skillpunkt_entry->cget('-text') < 2)
 							{
 								$dialog->messageBox(
 								-type    => 'Ok',
@@ -2848,6 +2978,7 @@ sub main_character_creation {
 			}
 			else
 			{
+				$next_id++;
 				$characters->{$next_id} = {
 					id          => $next_id,
 					name        => $name_entry->get(),
@@ -2881,11 +3012,8 @@ sub main_character_creation {
 					handicaps   => [$handicap_listbox->get(0, 'end')],
 					avatars     => [@avatars]
 				};
-
-				$next_id++;
-
 				update_character_list();
-				$dialog->destroy();
+				$add_char->destroy();
 			}
         }
     )->grid(-row => $row, -column => 1, -sticky => 'w');
@@ -2904,9 +3032,14 @@ sub edit_character {
 		return;
 	}
 
-    my $dialog = $mw->Toplevel();
-    focus_dialog($dialog, "Charakter bearbeiten", $mw);
-    $dialog->geometry("950x950");  # Width x Height in pixels
+    my $edit_char = $mw->Toplevel();
+    focus_dialog($edit_char, "Charakter bearbeiten", $mw);
+    $edit_char->geometry("950x950");  # Width x Height in pixels
+	my $scrolled_area = $edit_char->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+	my $dialog = $scrolled_area->Subwidget('scrolled');
 	my $spacer = $dialog->Label(-text => "", -width => 42)->grid(-row => 0, -column => 0);
 	my $verstand_benutzt = $current_character->{verstand_benutzt};
     my $row = 0;
@@ -3292,7 +3425,7 @@ sub edit_character {
     my $inventar_label = $dialog->Label(-text => "Inventarverwaltung")->grid(-row => $row, -column => 3);
 
     # Charakterbild
-    my $dirname = dirname(__FILE__);
+    my $dirname = get_script_dir();
 
     unless (-e "$dirname/avatar.gif") {
         die "Fehler: Bilddatei avatar.gif konnte nicht gefunden werden.\n";
@@ -3412,7 +3545,7 @@ sub edit_character {
 						}
 						elsif ($number < 12)
 						{
-							if($number > 8 && $xp_unused_entry->cget('-text') < 2)
+							if($number > 6 && $xp_unused_entry->cget('-text') < 2)
 							{
 								$dialog->messageBox(
 								-type    => 'Ok',
@@ -3625,7 +3758,7 @@ sub edit_character {
             $current_character->{handicaps}   = [$handicap_listbox->get(0, 'end')];
 
             update_character_list();
-            $dialog->destroy();
+            $edit_char->destroy();
         }
     )->grid(-row => $row, -column => 1, -sticky => 'w');
 }
@@ -3641,9 +3774,14 @@ sub update_item_label {
 	my $kosten = $panzerwerte->{$part}{kosten};
 	my $anmerkungen = $panzerwerte->{$part}{anmerkungen};
 
-    my $dialog = $form->Toplevel();
-	focus_dialog($dialog, "$part", $form);
-    $dialog->geometry("350x175");  # Breite x Höhe in Pixeln
+    my $item_dialog = $form->Toplevel();
+	focus_dialog($item_dialog, "$part", $form);
+    $item_dialog->geometry("350x180");  # Breite x Höhe in Pixeln
+	my $scrolled_area = $item_dialog->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+    my $dialog = $scrolled_area->Subwidget('scrolled');
 	my $description_label = $dialog->Label(-text => "Mehrere an dem Ort getragene Teile durch\nKomma trennen und Panzerungswert aufaddieren.")->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'w');
     
     my $name_label = $dialog->Label(-text => "getragen an $part")->grid(-row => 1, -column => 0, -sticky => 'w');
@@ -3679,11 +3817,13 @@ sub update_item_label {
 		$panzerwerte->{$part}{kosten} = $kosten;
 		$panzerwerte->{$part}{anmerkungen} = $anmerkungen;
         $label_widget->update;  # Stellen Sie sicher, dass die Änderung angewendet wird
+		$form->focus();
         $dialog->destroy;
     })->pack(-side => 'left', -padx => 5, -pady => 5);
 
     my $cancel_button = $button_frame->Button(-text => "Abbrechen", -command => sub {
-        $dialog->destroy;
+		$form->focus();
+        $item_dialog->destroy;
     })->pack(-side => 'right', -padx => 5, -pady => 5);
 }
 
@@ -3693,7 +3833,6 @@ sub focus_dialog
 
     unless (eval { $window_widget->isa('Tk::Widget') } && eval { $parent_widget->isa('Tk::Widget') })
 	{
-        warn "focus_dialog: Ungültige Widget-Argumente erhalten!";
         return;
     }
     $window_widget->title($window_title);
@@ -3720,8 +3859,13 @@ sub update_weapon_label
 	my $flaeche = $waffenwerte->{$part}{flaeche};
 	my $selected_type = $waffenwerte->{$part}{typ} || 'Nahkampf';
 
-    my $dialog = $form->Toplevel();
-	focus_dialog($dialog, $part, $form);
+    my $weapon_dialog = $form->Toplevel();
+	focus_dialog($weapon_dialog, $part, $form);
+	my $scrolled_area = $weapon_dialog->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+    my $dialog = $scrolled_area->Subwidget('scrolled');
 
     my $reichweite_label = $dialog->Label(-text => "Reichweite")->grid(-row => 6, -column => 0, -sticky => 'w');
     my $reichweite_entry = $dialog->Entry(-textvariable => \$reichweite)->grid(-row => 6, -column => 1, -sticky => 'w');
@@ -3736,7 +3880,7 @@ sub update_weapon_label
 	
 	if($selected_type eq 'Nahkampf')
 	{
-		$dialog->geometry("400x200");  # Breite x Höhe in Pixeln
+		$weapon_dialog->geometry("400x200");  # Breite x Höhe in Pixeln
 		$reichweite_label->gridForget();
 		$reichweite_entry->gridForget();
 		$pb_label->gridForget();
@@ -3747,10 +3891,10 @@ sub update_weapon_label
 		$schuss_entry->gridForget();
 		$flaeche_label->gridForget();
 		$flaeche_entry->gridForget();
-		}
+	}
 	else
 	{
-		$dialog->geometry("400x300");
+		$weapon_dialog->geometry("400x300");
 	}
 
     # Fügen Sie ein Dropdown-Menü hinzu, um zwischen Nahkampf- und Fernkampfwaffe zu wählen
@@ -3770,7 +3914,7 @@ sub update_weapon_label
                 $schuss_entry->gridForget();
 				$flaeche_label->gridForget();
                 $flaeche_entry->gridForget();
-				$dialog->geometry("400x200");
+				$weapon_dialog->geometry("400x200");
             } elsif ($type eq 'Fernkampf') {
                 $reichweite_label->grid(-row => 6, -column => 0, -sticky => 'w');
                 $reichweite_entry->grid(-row => 6, -column => 1, -sticky => 'w');
@@ -3782,7 +3926,7 @@ sub update_weapon_label
                 $schuss_entry->grid(-row => 9, -column => 1, -sticky => 'w');
 				$flaeche_label->grid(-row => 10, -column => 0, -sticky => 'w');
                 $flaeche_entry->grid(-row => 10, -column => 1, -sticky => 'w');
-				$dialog->geometry("400x300");
+				$weapon_dialog->geometry("400x300");
             }
         },
         -variable => \$selected_type
@@ -3841,11 +3985,13 @@ sub update_weapon_label
 			$waffenwerte->{$part}{rw} = '';
 		}
         $label_widget->update;  # Stellen Sie sicher, dass die Änderung angewendet wird
-        $dialog->destroy;
+		$form->focus();
+        $weapon_dialog->destroy;
     })->pack(-side => 'left', -padx => 5, -pady => 5);
 
     my $cancel_button = $button_frame->Button(-text => "Abbrechen", -command => sub {
-        $dialog->destroy;
+		$form->focus();
+        $weapon_dialog->destroy;
     })->pack(-side => 'right', -padx => 5, -pady => 5);
 }
 
@@ -3961,48 +4107,14 @@ sub delete_items_item
     $dialog->focus();  # Set focus back to dialog
 }
 
-# Character list frame
-my $list_frame = $mw->Frame()->pack(-side => 'left', -fill => 'y');
-my $charlist_label = $list_frame->Label(-text => "Charaktere:")->pack(-side => 'top', -fill => 'y');
-
-# Create a frame to hold the Listbox and Scrollbar
-my $char_list_frame = $list_frame->Frame(-height => 5)->pack(-side => 'top', -fill => 'both', -expand => 1);
-
-# Create a Scrolled Listbox for the character list
-my $listbox = $char_list_frame->Scrolled(
-    'Listbox',
-    -scrollbars => 'se',  # Vertical and horizontal scrollbars
-)->pack(-side => 'left', -fill => 'both', -expand => 1);
-$listbox->Subwidget('listbox')->bind('<Enter>', sub{$listbox->Subwidget('listbox')->focus()});
-$listbox->Subwidget('listbox')->bind('<Leave>', sub {$mw->focus();});
-
-# Bind Listbox selection event
-$listbox->bind('<<ListboxSelect>>', \&select_character);
-
-# Load characters into listbox
-load_characters();
-update_character_list();
-
-# Buttons frame
-my $btn_frame = $mw->Frame()->pack(-side => 'right', -fill => 'y');
-$btn_frame->Button(-text => 'Neuen Charakter erstellen', -command => \&create_character)->pack(-fill => 'x');
-$btn_frame->Button(-text => 'Charakter bearbeiten', -command => \&edit_character)->pack(-fill => 'x');
-$btn_frame->Button(-text => 'Charakter löschen', -command => \&delete_character)->pack(-fill => 'x');
-$btn_frame->Button(-text => 'Charaktere speichern', -command => \&save_characters)->pack(-fill => 'x');
-$btn_frame->Button(-text => 'Exportieren als PDF', -command => \&export_to_pdf)->pack(-fill => 'x');
-$btn_frame->Button(-text => 'Beenden', -command => \&exit_program)->pack(-fill => 'x');
-
-# Main loop
-MainLoop();
-exit 0;
-
 # Hilfsfunktion zum Formatieren von Würfelwerten
 sub format_dice {
     my ($value) = @_;
     return 'W0' if !defined $value || $value eq '' || $value eq '0';
     # Akzeptiere "12+X" oder nur Zahlen
     return "W$value" if $value =~ /^\d+$/ || $value =~ /^12\+\d+$/;
-    warn "Unerwarteter Würfelwert für format_dice: $value";
+	$mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'Würfelwert',
+                         -message => "Unerwarteter Würfelwert für format_dice: $value" );
     return "W?"; # Fallback
 }
 
@@ -4011,7 +4123,7 @@ sub draw_page_header {
 
     # --- Logo zeichnen (bleibt oben rechts) ---
     # >> NEU: Variablen hier deklarieren <<
-    my $dirname = dirname(__FILE__);
+    my $dirname = get_script_dir();
     my $logo_width = 100; # Breite des Logos
 
     my $logo_path = "$dirname/Uniworld-Logo.png";
@@ -4032,12 +4144,16 @@ sub draw_page_header {
                 $logo_y_bottom = $logo_y_top - $logo_height;
                 $gfx->image($logo, $logo_x, $logo_y_bottom, $logo_width, $logo_height);
             } else {
-                 warn "Konnte Logo '$logo_path' nicht als PNG-Objekt interpretieren.";
+				$mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF',
+                         -message => "Konnte Logo '$logo_path' nicht als PNG-Objekt interpretieren." );
             }
+		
         };
-        warn "Fehler beim Verarbeiten des Logos '$logo_path': $@" if $@;
+		$mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF',
+                         -message => "Fehler beim Verarbeiten des Logos '$logo_path': $@" ) if $@;
     } else {
-        warn "Logo-Datei nicht gefunden: $logo_path";
+		$mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF',
+                         -message => "Logo-Datei nicht gefunden: $logo_path" );
     }
     # Gibt die berechnete oder Fallback-Y-Position zurück
     return $logo_y_bottom;
@@ -4082,16 +4198,14 @@ sub write_pdf_line {
     $font_size = 10 if $font_size <= 0;
     # >> Verwende hier die gleiche Basishöhe wie in draw_table_row <<
     my $font_line_height = $font_size * 1.25; # Angepasst an draw_table_row
-
     # Textobjekt holen/erstellen
     my $text_obj = $$page_ref->text();
-    unless (defined $text_obj) { warn "Konnte kein Textobjekt von der Seite holen."; return 0; }
-
+    unless (defined $text_obj) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Konnte kein Textobjekt von der Seite holen." ); return 0; }
     # Font setzen
     my $font = $fonts->{$font_style};
-    unless (defined $font) { warn "FEHLER: Font '$font_style' nicht definiert!"; return 0; }
+    unless (defined $font) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "FEHLER: Font '$font_style' nicht definiert!" ); return 0; }
     eval { $text_obj->font($font, $font_size); };
-    if ($@) { warn "FEHLER: Font '$font_style'/$font_size setzen: $@"; return 0; }
+    if ($@) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "FEHLER: Font '$font_style'/$font_size setzen: $@" ); return 0; }
 
     my @lines_to_draw;
     my $num_lines = 1;
@@ -4152,7 +4266,7 @@ sub write_pdf_line {
             $current_page_text_obj->translate($actual_x, $current_line_y);
             $current_page_text_obj->text($line);
         };
-        if ($@) { warn "Fehler beim Schreiben von Text ('$line') an Pos ($actual_x, $current_line_y): $@"; }
+        if ($@) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "FEHLER: Font '$font_style'/$font_size setzen: $@" ); }
 
         $current_line_y -= $font_line_height; # Y für nächste Zeile im Umbruch
     }
@@ -4212,7 +4326,7 @@ sub draw_table_row {
     my $font_size = ($layout->{font_size} || 10) - 1;
     $font_size = 9 if $font_size <= 0;
     my $font_obj = $fonts->{$font_style};
-    unless (defined $font_obj) { warn "FEHLER: Font '$font_style' nicht definiert."; return; }
+    unless (defined $font_obj) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "FEHLER: Font '$font_style' nicht definiert." ); return; }
 
     if (ref $col_widths eq 'ARRAY' && @$col_widths > 0) {
         for my $i (0 .. $#$row_data) {
@@ -4294,7 +4408,7 @@ sub draw_table_row {
             );
             $current_x += $col_width;
         }
-    } else { warn "WARNUNG: col_widths ungültig in draw_table_row."; }
+    } else { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "WARNUNG: col_widths ungültig in draw_table_row." ); }
 
     # --- Schritt 6: Globale Y-Position aktualisieren ---
     $$y_pos_ref -= $row_height;
@@ -4315,12 +4429,12 @@ sub add_pdf_image {
         } elsif ($image_path =~ /\.tif?f$/i) {
              $image_obj = $pdf->image_tiff($image_path);
         } else {
-            warn "Unbekanntes Bildformat für: $image_path";
+            $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Unbekanntes Bildformat für: $image_path" );
             return;
         }
     };
     if ($@ || !defined $image_obj) {
-        warn "Fehler beim Laden des Bildes '$image_path': $@";
+        $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Fehler beim Laden des Bildes '$image_path': $@" );
         return;
     }
 
@@ -4332,7 +4446,7 @@ sub add_pdf_image {
         $gfx->image($image_obj, $x, $y - $height, $width, $height); # Y ist untere linke Ecke
     };
     if ($@) {
-         warn "Fehler beim Platzieren des Bildes '$image_path': $@";
+         $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Fehler beim Platzieren des Bildes '$image_path': $@" );
     }
 }
 
@@ -4366,10 +4480,9 @@ sub draw_checkboxes {
     my $gfx = $$page_ref->gfx;
     my $text_obj = $$page_ref->text();
     my $font = $fonts->{$font_style};
-    unless ($font) { warn "Font '$font_style' nicht gefunden!"; return $$y_pos_ref; }
+    unless ($font) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Font '$font_style' nicht gefunden!" ); return $$y_pos_ref; }
     eval { $text_obj->font($font, $font_size); };
-    if ($@) { warn "Font setzen fehlgeschlagen: $@"; return $$y_pos_ref; }
-
+    if ($@) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Font setzen fehlgeschlagen: $@" ); return $$y_pos_ref; }
 
     # --- Y-Positionen berechnen ---
     # $$y_pos_ref ist die OBERKANTE der logischen Zeile
@@ -4383,7 +4496,7 @@ sub draw_checkboxes {
         $text_obj->translate($x, $label_baseline_y);
         $text_obj->text($label_text);
     };
-    if ($@) { warn "Fehler beim Schreiben des Checkbox-Labels '$label_text': $@"; }
+    if ($@) { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Fehler beim Schreiben des Checkbox-Labels '$label_text': $@" ); }
 
 
     # 2. Kästchen zeichnen
@@ -5013,7 +5126,7 @@ sub export_to_pdf {
                     # Funktion aufrufen, die aktuelle Seite und Y-Position übernimmt
                     ($current_page, $current_y) = add_avatar_to_pdf($pdf, $avatar, $current_page, $current_y, \%fonts, \%layout);
                 } else {
-                    warn "Ungültiger Avatar-Eintrag gefunden: ", Dumper($avatar);
+                    $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Ungültiger Avatar-Eintrag gefunden: " . Dumper($avatar) );
                 }
             }
         }
@@ -5059,9 +5172,14 @@ sub select_character {
 sub manage_wissen_skills {
     my ($punktetyp, $parent_dialog, $wissen_skills_ref, $verstand_used_ref, $verstand_max, $skillpunkt_entry) = @_;
 	$verstand_max = ceil($verstand_max);
-    my $wissen_dialog = $parent_dialog->Toplevel();
-    focus_dialog($wissen_dialog, "Wissensfertigkeiten", $parent_dialog);
-    $wissen_dialog->geometry("250x100");  # Initialgröße
+    my $wissen_popup = $parent_dialog->Toplevel();
+	my $scrolled_area = $wissen_popup->Scrolled(
+        'Frame',
+        -scrollbars => 'osoe'
+    )->pack(-fill => 'both', -expand => 1);
+	my $wissen_dialog = $scrolled_area->Subwidget('scrolled');
+    focus_dialog($wissen_popup, "Wissensfertigkeiten", $parent_dialog);
+    $wissen_popup->geometry("250x100");
 
     my $wissen_row = 0;
 	my $verstand_label;
@@ -5073,13 +5191,13 @@ sub manage_wissen_skills {
         -text => "Speichern",
         -command => sub {
 			$$verstand_used_ref = $verstand_label->cget('-text') =~ /(\d+) von/ ? $1 : 0 if($verstand_max != -1);
-            $wissen_dialog->destroy;
+            $wissen_popup->destroy;
         }
     )->grid(-row => $wissen_row, -column => 0, -columnspan => 2);
-	$wissen_dialog->protocol('WM_DELETE_WINDOW', sub
+	$wissen_popup->protocol('WM_DELETE_WINDOW', sub
 	{
 		$$verstand_used_ref = $verstand_label->cget('-text') =~ /(\d+) von/ ? $1 : 0 if($verstand_max != -1);
-		$wissen_dialog->destroy;
+		$wissen_popup->destroy;
 	});
 
     $wissen_row++;
@@ -5109,7 +5227,7 @@ sub manage_wissen_skills {
                         $skill_label->configure(-text => "$punktetyp: " . $skillpunkt_entry->cget('-text'));
                     }
                     $wissen_dialog->after(100, sub {
-                        $$verstand_used_ref = update_wissen_list($punktetyp, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used_ref, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label);
+                        $$verstand_used_ref = update_wissen_list($punktetyp, $wissen_popup, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used_ref, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label);
                     });
                 }
             } else {
@@ -5121,7 +5239,7 @@ sub manage_wissen_skills {
     $wissen_row++;
 
     $wissen_dialog->after(100, sub {
-        $$verstand_used_ref = update_wissen_list($punktetyp, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used_ref, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label);
+        $$verstand_used_ref = update_wissen_list($punktetyp, $wissen_popup, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used_ref, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label);
     });
 	return $$verstand_used_ref;
 }
@@ -5149,7 +5267,7 @@ sub print_wissen_keine_punkte_error {
 }
 
 sub update_wissen_list {
-    my ($punktetyp, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label) = @_;
+    my ($punktetyp, $wissen_popup, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label) = @_;
 
     foreach my $child ($wissen_dialog->children) {
         my %gridinfo = $child->gridInfo;
@@ -5313,7 +5431,7 @@ sub update_wissen_list {
 
     my $new_width = 250 + $max_length * 5;
     my $new_height = 100 + $wissen_row * 25;
-    $wissen_dialog->geometry("${new_width}x${new_height}");
+    $wissen_popup->geometry("${new_width}x${new_height}");
 
     return $$verstand_used;
 }
@@ -5702,35 +5820,46 @@ sub print_rank_message
 	}
 }
 
-
-
 sub show_combined_distribution_popup {
     my (%args) = @_;
     my $parent       = $args{parent};
     my $title        = $args{title} // "Punkte verteilen";
     my $message      = $args{message} // "Bitte verteile die erhaltenen Bonuspunkte:";
-    # >> NEU: Nimmt den Hash der zu verteilenden Boni <<
-    my $bonuses_data = $args{bonuses_data}; # z.B. \%bonuses_to_distribute
+    my $bonuses_data = $args{bonuses_data};
 	
 	my %distributable_bonuses = (
 		'Verteidigung' => ['Parade', 'Robustheit'],
 		'Angriffsart'  => ['Nahkampf', 'Fernkampf', 'Machtnutzung'],
-		'Trank'   => ['Heiltrank', 'Machttrank']
+		'Trank'        => ['Heiltrank', 'Machttrank']
 	);
 
     # --- Interne Datenstrukturen ---
-    my %widgets; # $widgets{$bonus_type}{$option}{entry/label/frame...}
+    my %widgets;
     my %point_values;
-    my %remaining_vars; # $remaining_vars{$bonus_type} -> Variable für Restpunkte-Label
-    my %section_valid; # $section_valid{$bonus_type} -> 1 wenn gültig, 0 sonst
+    my %remaining_vars;
+    my %section_valid;
 
     my $combined_result = undef;
 
     # --- Pop-up Fenster erstellen ---
-    my $popup = $parent->Toplevel();
-	focus_dialog($popup, $title, $parent);
-    $popup->geometry("+".($parent->rootx+50)."+".($parent->rooty+50));
-    $popup->protocol('WM_DELETE_WINDOW', sub { my $all_sections_ok = 1;
+    my $dist_popup = $parent->Toplevel();
+	focus_dialog($dist_popup, $title, $parent);
+	
+	my $start_width = 450;  # Breite, die wahrscheinlich meistens passt
+    my $calc_height = 150;
+
+    # Positioniere mittig über Parent
+    
+    
+	my $scrolled_area = $dist_popup->Scrolled(
+		'Frame',
+		-scrollbars => 'osoe' # Scrollbars nur rechts/unten bei Bedarf
+	)->pack(-fill => 'both', -expand => 1); # Füllt das gesamte Dialogfenster
+
+	# --- Der eigentliche Inhalts-Frame ---
+	my $popup = $scrolled_area->Subwidget('scrolled');
+    $dist_popup->protocol('WM_DELETE_WINDOW', sub {
+		my $all_sections_ok = 1;
 		foreach my $b_type (keys %{ $bonuses_data // {} }) {
 			next unless exists $section_valid{$b_type}; # Nur relevante Sektionen prüfen
 			unless ($section_valid{$b_type}) {
@@ -5756,10 +5885,15 @@ sub show_combined_distribution_popup {
 				 }
 				 else
 				 {
-					 warn "Kein on_close_callback definiert!";
+					 $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'Fehler', -message => "Kein on_close_callback definiert!" );
 				 }
-				 $popup->destroy;
+				 $dist_popup->destroy;
 				# Wenn 'No', bleibt das Fenster offen
+			}
+			else { # Entweder alles OK oder keine relevanten Sektionen
+             if (defined $args{on_close_callback} && ref $args{on_close_callback} eq 'CODE') { $args{on_close_callback}->('cancel', undef); } # Auch hier Cancel melden
+             else { $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'Fehler', -message => "Kein on_close_callback definiert!" ); }
+             $dist_popup->destroy;
 			}
 		}
     });
@@ -5775,13 +5909,21 @@ sub show_combined_distribution_popup {
 		# --- Dynamisch Abschnitte für jeden Bonus-Typ erstellen ---
 		foreach my $bonus_type (sort keys %$bonuses_data)
 		{
-			if (exists $distributable_bonuses{$bonus_type})
+			if (defined $distributable_bonuses{$bonus_type})
 			{
 				$has_distributable_items = 1;
 				my $total_points = $bonuses_data->{$bonus_type};
 				my @options = @{ $distributable_bonuses{$bonus_type} // [] };
 
                 next unless $total_points > 0 && @options;
+				if($bonus_type eq 'Verteidigung' || $bonus_type eq 'Trank')
+				{
+					$calc_height += 160;
+				}
+				else
+				{
+					$calc_height += 210;
+				}
 
 				$section_valid{$bonus_type} = ($total_points == 0);
 
@@ -5857,9 +5999,9 @@ sub show_combined_distribution_popup {
 				if (defined $args{on_close_callback} && ref $args{on_close_callback} eq 'CODE') {
 				$args{on_close_callback}->('ok', \%result_copy); # Status 'ok' und Ergebnis übergeben
 			} else {
-				warn "Kein on_close_callback definiert!";
+				$mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'Fehler', -message => "Kein on_close_callback definiert!" );
 			}
-			$popup->destroy;
+			$dist_popup->destroy;
 			}
 		)->pack(-side => 'left', -padx => 5);
 		$popup->{_ok_button} = $ok_button; # Referenz speichern
@@ -5878,6 +6020,41 @@ sub show_combined_distribution_popup {
 		}
 		
 	}
+	
+	$scrolled_area->bind('<MouseWheel>', [\&scroll_widget_y, $scrolled_area, '%D']);
+    $scrolled_area->bind('<Button-4>',   [\&scroll_widget_y, $scrolled_area, -1]);
+    $scrolled_area->bind('<Button-5>',   [\&scroll_widget_y, $scrolled_area,  1]);
+    $popup->bind('<MouseWheel>', [\&scroll_widget_y, $scrolled_area, '%D']);
+    $popup->bind('<Button-4>',   [\&scroll_widget_y, $scrolled_area, -1]);
+    $popup->bind('<Button-5>',   [\&scroll_widget_y, $scrolled_area,  1]);
+
+	$popup->update;
+	$dist_popup->update;
+	my $final_width = $start_width;
+    my $final_height = $calc_height;
+
+    # Max Größe begrenzen
+    my $max_w = $parent->screenwidth * 0.9; # Etwas mehr Platz erlauben
+    my $max_h = $parent->screenheight * 0.9;
+    $final_width = $max_w if $final_width > $max_w;
+    $final_height = $max_h if $final_height > $max_h;
+    # Mindestgröße sicherstellen
+    $final_width = 300 if $final_width < 300;
+    $final_height = 200 if $final_height < 200;
+	my $parent_x = $parent->rootx;
+    my $parent_y = $parent->rooty;
+    my $parent_w = $parent->width;
+    my $parent_h = $parent->height;
+    my $popup_x = $parent_x + int(($parent_w - $final_width) / 2);
+    my $popup_y = $parent_y + int(($parent_h - $final_height) / 2);
+    $popup_x = 0 if $popup_x < 0;
+    $popup_y = 0 if $popup_y < 0;
+
+    # Setze FINALE Größe UND Position
+    $dist_popup->geometry("${final_width}x${final_height}+${popup_x}+${popup_y}");
+	$dist_popup->update;
+	$popup->update;
+
 	return;
 }
 

@@ -1,5 +1,6 @@
 #!/usr/bin/sh
-apt -y install perl perl-tk
+apt update
+apt -y install perl perl-tk libbrowser-open-perl
 cpan CPAN
-cpan install PDF::API2
+cpan PDF::API2
 cpan Tk::Balloon
