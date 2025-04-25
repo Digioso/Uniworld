@@ -1,14 +1,6 @@
 # Uniworld Character Manager
 Ein Character-Manager/Generator für das Pen & Paper System Uniworld.
 
-Dieses Tool wurde mit Hilfe von KI erstellt.<br>
-Genutzte KI:<br>
-ChatGPT<br>
-Deepseek<br>
-Google Gemini<br>
-Mistral Le Chat<br>
-Perplexity<br>
-
 Installation:
 <br>
 Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/tag/ucm<br>
@@ -37,3 +29,11 @@ chmod +x ucm.pl<br>
 chmod +x install_ubuntu.sh<br>
 sudo ./install_linux.sh<br>
 Anschließend kann die ucm.pl Datei ausgeführt werden.
+
+Dieses Tool wurde mit Hilfe von KI erstellt.<br>
+Genutzte KI:<br>
+ChatGPT<br>
+Deepseek<br>
+Google Gemini<br>
+Mistral Le Chat<br>
+Perplexity<br>
