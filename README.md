@@ -41,5 +41,7 @@ Mistral Le Chat<br>
 Perplexity<br>
 
 Dieses Produkt bezieht sich auf das Regelsystem Savage Worlds, erhältlich bei der Pinnacle Entertainment Group unter www.peginc.com. Savage Worlds und alle zugehörigen Logos und Warenzeichen sind urheberrechtlich geschützt durch die Pinnacle Entertainment Group. Verwendung mit Genehmigung. Die deutsche Übersetzung der Begrifflichkeiten von Ulisses Spiele darf verwendet werden. Pinnacle oder Ulisses Spiele geben keine Zusicherungen oder Garantien in Bezug auf die Qualität, Funktionsfähigkeit oder Eignung dieses Produkts für einen bestimmten Zweck.
+![Savage-Worlds-Fanprodukt-Logo](https://github.com/Digioso/Uniworld/blob/main/Savage-Worlds-Fanprodukt-Logo.png?raw=true)
 
 This game references the Savage Worlds game system, available from Pinnacle Entertainment Group at www.peginc.com. It is unofficial Media Content permitted under the Media Network Content Agreement. This content is not managed, approved, or endorsed by Pinnacle Entertainment Group. Certain portions of the materials used are the intellectual property of Pinnacle, and all rights are reserved. Savage Worlds, all related settings, and unique characters, locations, and characters, logos and trademarks are copyrights of Pinnacle Entertainment Group.
+![Savage-Worlds-Media-Network-Logo](https://github.com/Digioso/Uniworld/blob/main/SW_LOGO_MN_2019.png?raw=true)
