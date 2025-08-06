@@ -5,7 +5,6 @@ Installation:
 <br>
 Für Windows gibt es eine ausführbare Datei bei den Releases: [https://github.com/Digioso/Uniworld/releases/tag/ucm](https://github.com/Digioso/Uniworld/releases/latest)<br>
 Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.<br>
-Manche Virenscanner (z.B. Avast) blockieren jedoch die Ausführung. Ich habe die Datei an Avast zur Analyse gesendet.
 
 Falls du das Skript lieber direkt ausführen möchtest:<br>
 Lade den Quellcode und die Bilder von Github herunter und platziere sie in einem Verzeichnis deiner Wahl.
