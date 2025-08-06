@@ -38,6 +38,25 @@ my @char_skills = (
     "Hardware", "Kämpfen", "Nachforschung", "Software", "Überreden", "Überleben",
     "Umhören", "Wahrnehmung"
 );
+
+my %char_skill_attributes = (
+    "Athletik"       => "Körperliche Verfassung",
+    "Ausweichen"     => "Reaktion",
+    "Einschüchtern"  => "Willenskraft",
+    "Fahren"         => "Reaktion",
+    "Hacken"         => "Verstand",
+    "Heimlichkeit"   => "Reaktion",
+    "Hardware"       => "Verstand",
+    "Kämpfen"        => "Reaktion",
+    "Nachforschung"  => "Willenskraft",
+    "Software"       => "Verstand",
+    "Überreden"      => "Charisma",
+    "Überleben"      => "Körperliche Verfassung",
+    "Umhören"        => "Charisma",
+    "Wahrnehmung"    => "Reaktion",
+    "Wissen"         => "Verstand"
+);
+
 my @avatar_skills = (
     "Athletik", "Craften", "Diebstahl", "Fahrzeug lenken", "Fernkampf", "Heimlichkeit",
     "Heilen", "Inspirieren/Buffen", "Konstitution", "Machtnutzung", "Nahkampf",
@@ -2610,7 +2629,6 @@ sub main_character_creation {
 	
 	# Charakterbild
 	my $dirname = get_script_dir();
-print "$dirname\n";
     unless (-e "$dirname/avatar.gif") {
         die "Fehler: Bilddatei avatar.gif konnte nicht gefunden werden.\n";
     }
@@ -2742,6 +2760,7 @@ print "$dirname\n";
 	$skills{Wahrnehmung} = 4;
 	foreach my $skill (@char_skills) {
 		$skills_fields{$skill}{label} = $dialog->Label(-text => $skill)->grid(-row => $row, -column => 0, -sticky => 'w');
+		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{$skill}");
 		$skills_fields{$skill}{skillmod_label} = $dialog->Label(-width => 3, -text => "Mod")->grid(-row => $row, -column => 0, -sticky => 'n');
 		$skills_fields{$skill}{skillmod_entry} = $dialog->Entry(-width => 3, -text => 0, -validate => 'key', -validatecommand => sub {
 			my $new_value = shift;
@@ -2763,7 +2782,7 @@ print "$dirname\n";
 			}
 		});
 		
-		my $increase_button = $dialog->Button(
+				my $increase_button = $dialog->Button(
 			-text => "+",
 			-command => sub {
 				if($skillpunkt_entry->cget('-text') == 0)
@@ -2774,79 +2793,58 @@ print "$dirname\n";
 					-title   => 'Keine Fertigkeitspunkte mehr',
 					-message => "Keine Fertigkeitspunkte mehr zum Verteilen!"
 					);
+					return;
 				}
-				else
+
+				my $current_skill_value_str = $skills{$skill};
+				my $new_skill_value_str;
+
+				# Nächsten Fertigkeitswert bestimmen
+				if ($current_skill_value_str =~ /^(\d+)$/) {
+					my $number = $1;
+					if ($number == 0) { $new_skill_value_str = 4; }
+					elsif ($number < 12) { $new_skill_value_str = $number + 2; }
+					else { $new_skill_value_str = "12+1"; }
+				} elsif ($current_skill_value_str =~ /^12\+(\d+)$/) {
+					$new_skill_value_str = "12+" . ($1 + 1);
+				}
+
+				# Kosten bestimmen
+				my $cost = 1;
+				my $linked_attribute = $char_skill_attributes{$skill};
+				my $attribute_value_str = $attributes{$linked_attribute};
+
+				# Numerische Werte für den Vergleich
+				my $numeric_new_skill = ($new_skill_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $new_skill_value_str;
+				my $numeric_attribute = ($attribute_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $attribute_value_str;
+				
+				if ($numeric_new_skill > $numeric_attribute) {
+					$cost = 2;
+				}
+				# Das Kaufen einer neuen Fertigkeit (auf W4) kostet immer 1 Punkt
+				if ($current_skill_value_str == 0) {
+					$cost = 1;
+				}
+
+				# Prüfen, ob genug Punkte vorhanden sind
+				if ($skillpunkt_entry->cget('-text') < $cost) {
+					$dialog->messageBox(
+						-type    => 'Ok',
+						-icon    => 'error',
+						-title   => 'Nicht genug Fertigkeitspunkte',
+						-message => "Die Steigerung kostet $cost Punkte, aber es sind nur " . $skillpunkt_entry->cget('-text') . " verfügbar."
+					);
+					return;
+				}
+
+				# Änderungen anwenden
+				$skills{$skill} = $new_skill_value_str;
+				$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - $cost);
+				
+				update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
+				if($skill eq "Kämpfen" || $skill eq "Ausweichen")
 				{
-					my $current_value = $skills{$skill};
-					if ($current_value =~ /^(\d+)$/) {
-						my $number = $1;
-						if($number == 0) {
-							$skills{$skill} = 4;
-							$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 1);
-						}
-						elsif ($number < 12)
-						{
-							if($number > 6 && $skillpunkt_entry->cget('-text') < 2)
-							{
-								$dialog->messageBox(
-								-type    => 'Ok',
-								-icon    => 'error',
-								-title   => 'Nicht genug Fertigkeitspunkte',
-								-message => "Fertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch einer da!"
-								);
-							}
-							else
-							{
-								$number+=2;
-								$skills{$skill} = $number;
-								if($number > 8)
-								{
-									$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 2);
-								}
-								else
-								{
-									$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 1);
-								}
-							}
-						} elsif ($number == 12) {
-							if($skillpunkt_entry->cget('-text') < 2)
-							{
-								$dialog->messageBox(
-								-type    => 'Ok',
-								-icon    => 'error',
-								-title   => 'Nicht genug Fertigkeitspunkte',
-								-message => "Fertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch einer da!"
-								);
-							}
-							else
-							{
-								$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 2);
-								$skills{$skill} = "12+1";
-							}
-						}
-					} elsif ($current_value =~ /^12\+(\d+)$/) {
-						my $number = $1;
-						if($skillpunkt_entry->cget('-text') < 2)
-						{
-							$dialog->messageBox(
-							-type    => 'Ok',
-							-icon    => 'error',
-							-title   => 'Nicht genug Fertigkeitspunkte',
-							-message => "Fertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch einer da!"
-							);
-						}
-						else
-						{
-							$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 2);
-							$number++;
-							$skills{$skill} = "12+$number";
-						}
-					}
-					update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
-					if($skill eq "Kämpfen" || $skill eq "Ausweichen")
-					{
-						update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis,	$parademod_entry, $paradegs_entry);
-					}
+					update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis,	$parademod_entry, $paradegs_entry);
 				}
 			}
 		)->grid(-row => $row, -column => 1, -sticky => 'n', -ipadx=> 8);
@@ -2854,35 +2852,41 @@ print "$dirname\n";
 		my $decrease_button = $dialog->Button(
 			-text => "-",
 			-command => sub {
-				my $current_value = $skills{$skill};
-				if ($current_value =~ /^(\d+)$/) {
-					my $number = $1;
-					if($number == 4) {
-						$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') + 1);
-						$skills{$skill} = 0;
-					}
-					elsif ($number > 0) {
-						$number-=2;
-						$skills{$skill} = $number;
-						if($number > 6)
-						{
-							$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') + 2);
-						}
-						else
-						{
-							$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') + 1);
-						}
-					}
-				} elsif ($current_value =~ /^12\+(\d+)$/) {
-					my $number = $1;
-					$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') + 2);
-					if ($number > 1) {
-						$number--;
-						$skills{$skill} = "12+$number";
-					} else {
-						$skills{$skill} = 12;
-					}
+				my $current_skill_value_str = $skills{$skill};
+				return if $current_skill_value_str == 0; # Nichts zu tun
+
+				# Kostenrückerstattung bestimmen
+				my $refund = 1;
+				my $linked_attribute = $char_skill_attributes{$skill};
+				my $attribute_value_str = $attributes{$linked_attribute};
+
+				# Numerische Werte für den Vergleich
+				my $numeric_current_skill = ($current_skill_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $current_skill_value_str;
+				my $numeric_attribute = ($attribute_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $attribute_value_str;
+				
+				if ($numeric_current_skill > $numeric_attribute) {
+					$refund = 2;
 				}
+				# Das Senken von W4 auf 0 gibt immer 1 Punkt zurück
+				if ($current_skill_value_str == 4) {
+					$refund = 1;
+				}
+
+				# Vorherigen Fertigkeitswert bestimmen
+				my $previous_skill_value_str;
+				if ($current_skill_value_str =~ /^12\+(\d+)$/) {
+					my $number = $1;
+					$previous_skill_value_str = ($number > 1) ? "12+" . ($number - 1) : 12;
+				} elsif ($current_skill_value_str =~ /^(\d+)$/) {
+					my $number = $1;
+					if ($number == 4) { $previous_skill_value_str = 0; }
+					elsif ($number > 4) { $previous_skill_value_str = $number - 2; }
+				}
+				
+				# Änderungen anwenden
+				$skills{$skill} = $previous_skill_value_str;
+				$skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') + $refund);
+				
 				update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
 				if($skill eq "Kämpfen" || $skill eq "Ausweichen")
 				{
@@ -3010,7 +3014,8 @@ print "$dirname\n";
 					skill_mods  => { %skill_mods },
 					talents     => [$talent_listbox->get(0, 'end')],
 					handicaps   => [$handicap_listbox->get(0, 'end')],
-					avatars     => [@avatars]
+					avatars     => [@avatars],
+					attr_steig  => { "Anfänger" => 0, "Fortgeschritten" => 0, "Veteran" => 0, "Heroisch" => 0, "Legendär" => 0}
 				};
 				update_character_list();
 				$add_char->destroy();
@@ -3166,7 +3171,8 @@ sub edit_character {
 	
 	# Attribute
 	my $attr_label = $dialog->Label(-text => "Attribute")->grid(-row => 4, -column => 0, -columnspan => 2);
-
+	
+	my %attr_steig = %{$current_character->{attr_steig}};
 	# Attribute müssen noch angepasst werden! + wurde noch nichts gemacht. $attrpunkt_entry gibt es nicht. Hier auch auf XP oder Charakerpunkte wechseln
 	foreach my $attribute (@char_attributes) {
 		my $label = $dialog->Label(-text => $attribute)->grid(-row => $row, -column => 0, -sticky => 'w');
@@ -3210,29 +3216,59 @@ sub edit_character {
 				}
 				else
 				{
-					$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 2);
-					my $current_value = $attributes{$attribute};
-					if ($current_value =~ /^(\d+)$/) {
-						my $number = $1;
-						if ($number < 12) {
-							$number += 2;
-							$attributes{$attribute} = $number;
-						} elsif ($number == 12) {
-							$attributes{$attribute} = "12+1";
+					my $aufstiege = int(($xp_entry->cget('-text') / 2) - 16);
+					if($rank_entry->cget('-text') eq "Legendär" && ($attr_steig{$rank_entry->cget('-text')} > $aufstiege))
+					{
+						$dialog->messageBox(
+						-type    => 'Ok',
+						-icon    => 'error',
+						-title   => 'Bereits gesteigert',
+						-message => "Legendäre Charaktere können nur alle 2 Aufstiege ein Attribut steigern!"
+						);
+					}
+					elsif($rank_entry->cget('-text') ne "Legendär" && $attr_steig{$rank_entry->cget('-text')} > 0)
+					{
+						$dialog->messageBox(
+						-type    => 'Ok',
+						-icon    => 'error',
+						-title   => 'Bereits gesteigert',
+						-message => "Du hast auf diesem Rang bereits ein Attribut gesteigert!"
+						);
+					}
+					else
+					{
+						if($rank_entry->cget('-text') ne "Legendär")
+						{
+							$attr_steig{$rank_entry->cget('-text')}++;
 						}
-					} elsif ($current_value =~ /^12\+(\d+)$/) {
-						my $number = $1 + 1;
-						$attributes{$attribute} = "12+$number";
-					}
-					update_display($attributes{$attribute}, $attr_mods{$attribute}, $entry);
-					if ($attribute eq "Körperliche Verfassung")
-					{
-						update_online($attributes{"Körperliche Verfassung"}, $online_basis, $onlinemod_entry->get(), $onlinegs_entry, $balloon, $attr_mods{"Körperliche Verfassung"});
-						update_robust(\%attributes, \%attr_mods, $robust_basis, $robustmod_entry, $robustgs_entry);
-					}
-					elsif($attribute eq "Reaktion")
-					{
-						update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis, $parademod_entry, $paradegs_entry);
+						else
+						{
+							$attr_steig{$rank_entry->cget('-text')}+=2;
+						}
+						$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 2);
+						my $current_value = $attributes{$attribute};
+						if ($current_value =~ /^(\d+)$/) {
+							my $number = $1;
+							if ($number < 12) {
+								$number += 2;
+								$attributes{$attribute} = $number;
+							} elsif ($number == 12) {
+								$attributes{$attribute} = "12+1";
+							}
+						} elsif ($current_value =~ /^12\+(\d+)$/) {
+							my $number = $1 + 1;
+							$attributes{$attribute} = "12+$number";
+						}
+						update_display($attributes{$attribute}, $attr_mods{$attribute}, $entry);
+						if ($attribute eq "Körperliche Verfassung")
+						{
+							update_online($attributes{"Körperliche Verfassung"}, $online_basis, $onlinemod_entry->get(), $onlinegs_entry, $balloon, $attr_mods{"Körperliche Verfassung"});
+							update_robust(\%attributes, \%attr_mods, $robust_basis, $robustmod_entry, $robustgs_entry);
+						}
+						elsif($attribute eq "Reaktion")
+						{
+							update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis, $parademod_entry, $paradegs_entry);
+						}
 					}
 				}
 			}
@@ -3279,6 +3315,7 @@ sub edit_character {
 								$attributes{$attribute} = 12;
 							}
 						}
+						$attr_steig{$rank_entry->cget('-text')}--;
 						update_display($attributes{$attribute}, $attr_mods{$attribute}, $entry);
 					}
 					else
@@ -3304,10 +3341,12 @@ sub edit_character {
 								-title   => 'Attribut senken',
 								-message => "Attribute können nicht niedriger als W4 sein."
 							);
+							return;
 						}
 						elsif ($number > 4)
 						{
 							$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 2);
+							$attr_steig{$rank_entry->cget('-text')}--;
 							$number -= 2;
 							$attributes{$attribute} = $number;
 						}
@@ -3316,6 +3355,7 @@ sub edit_character {
 					{
 						my $number = $1;
 						$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 2);
+						$attr_steig{$rank_entry->cget('-text')}--;
 						if ($number > 1)
 						{
 							$number--;
@@ -3501,6 +3541,7 @@ sub edit_character {
 
 	foreach my $skill (@char_skills) {
 		$skills_fields{$skill}{label} = $dialog->Label(-text => $skill)->grid(-row => $row, -column => 0, -sticky => 'w');
+		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{$skill}");
 		$skills_fields{$skill}{skillmod_label} = $dialog->Label(-width => 3, -text => "Mod")->grid(-row => $row, -column => 0, -sticky => 'n');
 		$skills_fields{$skill}{skillmod_entry} = $dialog->Entry(-width => 3, -text => $skill_mods{$skill} || 0, -validate => 'key', -validatecommand => sub {
 			my $new_value = shift;
@@ -3531,81 +3572,60 @@ sub edit_character {
 					-type    => 'Ok',
 					-icon    => 'error',
 					-title   => 'Nicht genug XP',
-					-message => "Night genug freie Erfahrungspunkte!"
+					-message => "Nicht genug freie Erfahrungspunkte!"
 					);
+					return;
 				}
-				else
+
+				my $current_skill_value_str = $skills{$skill};
+				my $new_skill_value_str;
+
+				# Nächsten Fertigkeitswert bestimmen
+				if ($current_skill_value_str =~ /^(\d+)$/) {
+					my $number = $1;
+					if ($number == 0) { $new_skill_value_str = 4; }
+					elsif ($number < 12) { $new_skill_value_str = $number + 2; }
+					else { $new_skill_value_str = "12+1"; }
+				} elsif ($current_skill_value_str =~ /^12\+(\d+)$/) {
+					$new_skill_value_str = "12+" . ($1 + 1);
+				}
+				
+				# Kosten bestimmen
+				my $cost = 1;
+				my $linked_attribute = $char_skill_attributes{$skill};
+				my $attribute_value_str = $attributes{$linked_attribute};
+
+				# Numerische Werte für den Vergleich
+				my $numeric_new_skill = ($new_skill_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $new_skill_value_str;
+				my $numeric_attribute = ($attribute_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $attribute_value_str;
+				
+				if ($numeric_new_skill > $numeric_attribute) {
+					$cost = 2;
+				}
+				# Das Kaufen einer neuen Fertigkeit (auf W4) kostet immer 1 Punkt
+				if ($current_skill_value_str == 0) {
+					$cost = 1;
+				}
+
+				# Prüfen, ob genug Punkte vorhanden sind
+				if ($xp_unused_entry->cget('-text') < $cost) {
+					$dialog->messageBox(
+						-type    => 'Ok',
+						-icon    => 'error',
+						-title   => 'Nicht genug XP',
+						-message => "Die Steigerung kostet $cost XP, aber es sind nur " . $xp_unused_entry->cget('-text') . " verfügbar."
+					);
+					return;
+				}
+
+				# Änderungen anwenden
+				$skills{$skill} = $new_skill_value_str;
+				$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - $cost);
+				
+				update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
+				if($skill eq "Kämpfen" || $skill eq "Ausweichen")
 				{
-					my $current_value = $skills{$skill};
-					if ($current_value =~ /^(\d+)$/) {
-						my $number = $1;
-						if($number == 0) {
-							$skills{$skill} = 4;
-							$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 1);
-						}
-						elsif ($number < 12)
-						{
-							if($number > 6 && $xp_unused_entry->cget('-text') < 2)
-							{
-								$dialog->messageBox(
-								-type    => 'Ok',
-								-icon    => 'error',
-								-title   => 'Nicht genug XP',
-								-message => "Night genug freie Erfahrungspunkte.\nFertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch 1 da!"
-								);
-							}
-							else
-							{
-								$number+=2;
-								$skills{$skill} = $number;
-								if($number > 8)
-								{
-									$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 2);
-								}
-								else
-								{
-									$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 1);
-								}
-							}
-						} elsif ($number == 12) {
-							if($xp_unused_entry->cget('-text') < 2)
-							{
-								$dialog->messageBox(
-								-type    => 'Ok',
-								-icon    => 'error',
-								-title   => 'Nicht genug XP',
-								-message => "Night genug freie Erfahrungspunkte.\nFertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch 1 da!"
-								);
-							}
-							else
-							{
-								$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 2);
-								$skills{$skill} = "12+1";
-							}
-						}
-					} elsif ($current_value =~ /^12\+(\d+)$/) {
-						my $number = $1;
-						if($xp_unused_entry->cget('-text') < 2)
-						{
-							$dialog->messageBox(
-							-type    => 'Ok',
-							-icon    => 'error',
-							-title   => 'Nicht genug XP',
-								-message => "Night genug freie Erfahrungspunkte.\nFertigkeiten über W8 kosten 2 Punkte, es ist aber nur noch 1 da!"
-							);
-						}
-						else
-						{
-							$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') - 2);
-							$number++;
-							$skills{$skill} = "12+$number";
-						}
-					}
-					update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
-					if($skill eq "Kämpfen" || $skill eq "Ausweichen")
-					{
-						update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis,	$parademod_entry, $paradegs_entry);
-					}
+					update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis,	$parademod_entry, $paradegs_entry);
 				}
 			}
 		)->grid(-row => $row, -column => 1, -sticky => 'n', -ipadx=> 8);
@@ -3613,35 +3633,41 @@ sub edit_character {
 		my $decrease_button = $dialog->Button(
 			-text => "-",
 			-command => sub {
-				my $current_value = $skills{$skill};
-				if ($current_value =~ /^(\d+)$/) {
-					my $number = $1;
-					if($number == 4) {
-						$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 1);
-						$skills{$skill} = 0;
-					}
-					elsif ($number > 0) {
-						$number-=2;
-						$skills{$skill} = $number;
-						if($number > 6)
-						{
-							$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 2);
-						}
-						else
-						{
-							$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 1);
-						}
-					}
-				} elsif ($current_value =~ /^12\+(\d+)$/) {
-					my $number = $1;
-					$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + 2);
-					if ($number > 1) {
-						$number--;
-						$skills{$skill} = "12+$number";
-					} else {
-						$skills{$skill} = 12;
-					}
+				my $current_skill_value_str = $skills{$skill};
+				return if $current_skill_value_str == 0; # Nichts zu tun
+
+				# Kostenrückerstattung bestimmen
+				my $refund = 1;
+				my $linked_attribute = $char_skill_attributes{$skill};
+				my $attribute_value_str = $attributes{$linked_attribute};
+				
+				# Numerische Werte für den Vergleich
+				my $numeric_current_skill = ($current_skill_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $current_skill_value_str;
+				my $numeric_attribute = ($attribute_value_str =~ /^12\+(\d+)$/) ? 12 + $1 : $attribute_value_str;
+				
+				if ($numeric_current_skill > $numeric_attribute) {
+					$refund = 2;
 				}
+				# Das Senken von W4 auf 0 gibt immer 1 Punkt zurück
+				if ($current_skill_value_str == 4) {
+					$refund = 1;
+				}
+				
+				# Vorherigen Fertigkeitswert bestimmen
+				my $previous_skill_value_str;
+				if ($current_skill_value_str =~ /^12\+(\d+)$/) {
+					my $number = $1;
+					$previous_skill_value_str = ($number > 1) ? "12+" . ($number - 1) : 12;
+				} elsif ($current_skill_value_str =~ /^(\d+)$/) {
+					my $number = $1;
+					if ($number == 4) { $previous_skill_value_str = 0; }
+					elsif ($number > 4) { $previous_skill_value_str = $number - 2; }
+				}
+				
+				# Änderungen anwenden
+				$skills{$skill} = $previous_skill_value_str;
+				$xp_unused_entry->configure(-text => $xp_unused_entry->cget('-text') + $refund);
+				
 				update_display($skills{$skill}, $skill_mods{$skill}, $skills_fields{$skill}{entry}, $skill);
 				if($skill eq "Kämpfen" || $skill eq "Ausweichen")
 				{
@@ -3752,6 +3778,7 @@ sub edit_character {
 			$current_character->{attributes} = { %attributes };
 			$current_character->{attr_mods} = { %attr_mods };
 			$current_character->{wissen} = { %wissen_skills };
+			$current_character->{attr_steig} = { %attr_steig };
             $current_character->{parademod}   = $parademod_entry->get();
             $current_character->{robustmod}   = $robustmod_entry->get();
             $current_character->{talents}     = [$talent_listbox->get(0, 'end')];
@@ -3818,7 +3845,7 @@ sub update_item_label {
 		$panzerwerte->{$part}{anmerkungen} = $anmerkungen;
         $label_widget->update;  # Stellen Sie sicher, dass die Änderung angewendet wird
 		$form->focus();
-        $dialog->destroy;
+        $item_dialog->destroy;
     })->pack(-side => 'left', -padx => 5, -pady => 5);
 
     my $cancel_button = $button_frame->Button(-text => "Abbrechen", -command => sub {
@@ -5372,8 +5399,8 @@ sub update_wissen_list {
                 if ($current_value =~ /^(\d+)$/) {
                     my $number = $1;
                     if ($number == 4) {
-                        # $wissen_skills_ref->{$wissen} = 0; Alernativ. Manu findet es besser, wenn die Wissensfertigkeit gelöscht wird.
-						delete $wissen_skills_ref->{$wissen};
+                        $wissen_skills_ref->{$wissen} = 0;
+						#delete $wissen_skills_ref->{$wissen}; #Alernativ. Manu findet es besser, wenn die Wissensfertigkeit gelöscht wird. Schwer zu implementieren.
                         if ($$verstand_used > 0) {
                             $$verstand_used--;
                         } else {
