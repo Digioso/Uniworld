@@ -3,7 +3,7 @@ Ein Character-Manager/Generator für das Pen & Paper System Uniworld.
 
 Installation:
 <br>
-Für Windows gibt es eine ausführbare Datei bei den Releases: [https://github.com/Digioso/Uniworld/releases/tag/ucm](https://github.com/Digioso/Uniworld/releases/latest)<br>
+Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/latest<br>
 Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.<br>
 
 Falls du das Skript lieber direkt ausführen möchtest:<br>
