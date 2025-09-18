@@ -329,9 +329,75 @@ sub manage_avatars {
     )->pack(-side => 'top');
 
     $avatar_button_frame->Button(
+        -text    => "Avatar duplizieren",
+        -command => sub { duplicate_avatar($parent_dialog, $avatars_ref, $avatar_listbox) }
+    )->pack(-side => 'top');
+	$avatar_button_frame->Button(
         -text    => "Avatar löschen",
         -command => sub { delete_avatar($parent_dialog, $avatars_ref, $avatar_listbox) }
     )->pack(-side => 'top');
+}
+
+sub duplicate_avatar {
+    my ($parent_dialog, $avatars_ref, $avatar_listbox) = @_;
+
+    # 1. Prüfen, ob ein Eintrag in der Listbox ausgewählt ist.
+    my @selected_indices = $avatar_listbox->curselection();
+    unless (@selected_indices) {
+        $parent_dialog->messageBox(
+            -type    => 'Ok',
+            -icon    => 'info',
+            -title   => 'Avatar wählen',
+            -message => "Bitte einen zu duplizierenden Avatar auswählen."
+        );
+        return;
+    }
+    my $index = $selected_indices[0];
+
+    # 2. Der Haupt-Avatar (an erster Stelle) kann nicht dupliziert werden.
+    if ($index == 0) {
+        $parent_dialog->messageBox(
+            -type    => 'Ok',
+            -icon    => 'info',
+            -title   => 'Duplizieren nicht möglich',
+            -message => "Der Uniworld-Haupt-Avatar kann nicht dupliziert werden."
+        );
+        return;
+    }
+
+    # 3. Den originalen Avatar aus dem Datenarray holen.
+    my $original_avatar = $avatars_ref->[$index];
+
+    # 4. Eine tiefe Kopie des Avatars erstellen.
+    # Die sicherste Methode mit den vorhandenen Modulen ist, das Objekt
+    # in einen JSON-String und wieder zurück zu konvertieren.
+    my $json_converter = JSON->new->allow_nonref;
+    my $json_string = $json_converter->encode($original_avatar);
+    my $new_avatar = $json_converter->decode($json_string);
+
+    # 5. Den Namen des Duplikats anpassen, um Eindeutigkeit zu gewährleisten.
+    my $base_name = $original_avatar->{name} . ' (Kopie)';
+    my $new_name = $base_name;
+    my $counter = 1;
+    # Prüfen, ob der neue Name bereits existiert. Wenn ja, eine Zahl anhängen.
+    while ( grep { $_->{name} eq $new_name } @$avatars_ref ) {
+        $counter++;
+        $new_name = "$base_name $counter";
+    }
+    $new_avatar->{name} = $new_name;
+
+
+    # 6. Den neuen Avatar zum Haupt-Datenarray hinzufügen.
+    push @$avatars_ref, $new_avatar;
+
+    # 7. Den neuen Avatar in der Listbox anzeigen.
+    my $display_text = $new_avatar->{name} . ' (' . $new_avatar->{game} . ')';
+    $avatar_listbox->insert('end', $display_text);
+
+    # 8. Den neuen Eintrag direkt auswählen und sichtbar machen.
+    $avatar_listbox->selectionClear(0, 'end');
+    $avatar_listbox->selectionSet('end');
+    $avatar_listbox->see('end');
 }
 
 sub add_avatar {
