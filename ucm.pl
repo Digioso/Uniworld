@@ -35,8 +35,7 @@ binmode(STDERR, ":utf8");
 my @char_attributes = ("Charisma", "Körperliche Verfassung", "Reaktion", "Verstand", "Willenskraft");
 my @char_skills = (
     "Athletik", "Ausweichen", "Einschüchtern", "Fahren", "Hacken", "Heimlichkeit",
-    "Hardware", "Kämpfen", "Nachforschung", "Software", "Überreden", "Überleben",
-    "Umhören", "Wahrnehmung"
+    "Hardware", "Kämpfen", "Provozieren", "Recherche", "Software", "Überreden", "Überleben", "Wahrnehmung"
 );
 
 my %char_skill_attributes = (
@@ -48,23 +47,23 @@ my %char_skill_attributes = (
     "Heimlichkeit"   => "Reaktion",
     "Hardware"       => "Verstand",
     "Kämpfen"        => "Reaktion",
-    "Nachforschung"  => "Willenskraft",
+	"Provozieren"    => "Charisma",
+    "Recherche"  	 => "Willenskraft",
     "Software"       => "Verstand",
     "Überreden"      => "Charisma",
     "Überleben"      => "Körperliche Verfassung",
-    "Umhören"        => "Charisma",
     "Wahrnehmung"    => "Reaktion",
     "Wissen"         => "Verstand"
 );
 
 my @avatar_skills = (
-    "Athletik", "Craften", "Diebstahl", "Fahrzeug lenken", "Fernkampf", "Heimlichkeit",
-    "Heilen", "Inspirieren/Buffen", "Konstitution", "Machtnutzung", "Nahkampf",
-    "Provozieren/Taunt", "Überreden", "Wahrnehmung", "Zeugs sammeln"
+    "Athletik", "Craften", "Diebeskunst", "Fahren", "Fernkampf", "Heimlichkeit",
+    "Heilen", "Inspirieren", "Konstitution", "Machtnutzung", "Nahkampf",
+    "Überreden", "Verspotten", "Wahrnehmung", "Zeugs sammeln"
 );
 my @avatar_skills_light = (
-    "Craften", "Fernkampf","Heilen", "Konstitution", "Körperliches", "Machtnutzung", "Nahkampf",
-    "Soziales", "Überreden", "Wahrnehmung", "Zeugs sammeln"
+    "Craften", "Fernkampf", "Heilen", "Konstitution", "Körperliches", "Machtnutzung", "Nahkampf",
+    "Soziales", "Wahrnehmung", "Zeugs sammeln"
 );
 
 # Create main window
@@ -80,7 +79,7 @@ my $scrolled_main_area  = $mw->Scrolled(
 
 my $content_container = $scrolled_main_area->Subwidget('scrolled');
 	 
-my $link_description = '© 2025 Andreas & Manuela Balthasar GbR - www.andreasbalthasar.de';
+my $link_description = '© 2026 Andreas & Manuela Balthasar GbR - www.andreasbalthasar.de';
 my $target_url = 'https://www.andreasbalthasar.de';
 
 my @default_font_config_list = $content_container->fontActual('TkDefaultFont');
@@ -5588,16 +5587,11 @@ sub update_display_avatar {
 		$chskill = "Kämpfen";
 		$attr = "Reaktion";
 	}
-	elsif($skill =~ /Heimlichkeit|Diebstahl|Athletik/)
+	elsif($skill =~ /Heimlichkeit|Diebeskunst|Athletik|Fahren/)
 	{
 		$attr = "Reaktion";
 	}
-	elsif($skill eq "Fahrzeug lenken")
-	{
-		$chskill = "Fahren";
-		$attr = "Reaktion";
-	}
-	elsif($skill =~ /Inspirieren|Provozieren|Überreden/)
+	elsif($skill =~ /Inspirieren|Überreden|Verspotten/)
 	{
 		$attr = "Charisma";
 	}
