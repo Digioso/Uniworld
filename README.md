@@ -17,7 +17,7 @@ Falls du das Skript lieber direkt ausführen möchtest:<br>
 Lade den Quellcode und die Bilder von Github herunter und platziere sie in einem Verzeichnis deiner Wahl.<br>
 Z.B. das Repository als zip herunterladen oder mit: git clone https://github.com/Digioso/Uniworld.git<br><br>
 
-Windows:
+Windows:<br>
 Lade dir StrawberryPerl von https://www.strawberryperl.com herunter. Bitte installiere es nach C:\strawberry<br>
 Ich habe die Erfahrung gemacht, dass andere Installationspfade ggf. zu Problemen führen.<br>
 Öffne eine Administrator Eingabeaufforderung.<br>
