@@ -1,34 +1,52 @@
 # Uniworld Character Manager
 Ein Character-Manager/Generator für das Pen & Paper System Uniworld.
 
-Installation:
+Windows Download:
 <br>
 Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/latest<br>
 Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.<br>
 
+# Installation:
+
 Falls du das Skript lieber direkt ausführen möchtest:<br>
 Lade den Quellcode und die Bilder von Github herunter und platziere sie in einem Verzeichnis deiner Wahl.
+Z.B. das Repository als zip herunterladen oder mit: git clone https://github.com/Digioso/Uniworld.git 
 
 Windows:
 Lade dir StrawberryPerl von https://www.strawberryperl.com herunter. Bitte installiere es nach C:\strawberry<br>
 Ich habe die Erfahrung gemacht, dass andere Installationspfade ggf. zu Problemen führen.<br>
-Führe einen Rechtsklick auf die install.bat Datei aus und wähle "Als Administrator ausführen". Dies installiert alle benötigten Perl-Module.<br>
-Danach kann das Programm durch einen Doppelklick auf ucm.pl ausgeführt werden. Ggf. musst du noch einstellen, dass .pl Dateien mit Perl ausgeführt werden.<br>
+Öffne eine Administrator Eingabeaufforderung.
+Führe dann die folgenden Befehle aus:
+cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).
+cpan PDF::API2
+cpan Browser::Open
+set LC_ALL=C
+set LANG=C
+cpanm https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/patched_cpan_modules/Tk-804.036_001.tar.gz
+cpan Tk::Balloon
 
 Ubuntu Linux:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
 cd verzeichnis-mit-den-dateien<br>
 chmod +x ucm.pl<br>
-chmod +x install_ubuntu.sh<br>
-sudo ./install_ubuntu.sh<br>
+sudo apt update
+sudo apt -y install perl perl-tk libbrowser-open-perl
+sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).
+sudo cpan PDF::API2
+sudo cpan Tk::Balloon
 Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.<br>
 
 Andere Linux-Distributionen:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
 cd verzeichnis-mit-den-dateien<br>
 chmod +x ucm.pl<br>
-chmod +x install_linux.sh<br>
-sudo ./install_linux.sh<br>
+sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).
+sudo cpan PDF::API2
+sudo cpan Browser::Open
+export LC_ALL=C
+export LANG=C
+sudo cpan Tk
+sudo cpan Tk::Balloon
 Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.
 
 Dieses Tool wurde mit Hilfe von KI erstellt.<br>
