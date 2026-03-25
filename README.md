@@ -1,9 +1,10 @@
 # Uniworld Character Manager
-Ein Character-Manager/Generator für das Pen & Paper System Uniworld.<br>
+Dies ist der offizielle Character-Manager/Generator für das Pen & Paper System Uniworld.<br>
 Mit diesem Tool kannst du deine Uniworld Charaktere & Avatare erstellen und verwalten. Inklusive aufleveln und exportieren.<br>
 Als Export-Formate stehen PDF & JSON zur Auswahl. Tu dir selbst ein gefallen und nimm das JSON Format für unseren  HTML Charakterbogen. :)<br>
 Diesen findest du hier: https://uniworld-rpg.de/interface/Charakterbogen.html<br/>
-Ist komplett Online verwenbar und du kannst ihn dort auch herunterladen. Und natürlich auch ausdrucken.
+Ist komplett Online verwenbar und du kannst ihn dort auch herunterladen. Und natürlich auch ausdrucken.<br>
+Mehr zur Uniworld gibt es auf unserer Webseite https://uniworld-rpg.de
 
 # Windows Download
 <br>
