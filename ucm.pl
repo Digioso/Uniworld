@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use utf8;
-use POSIX qw(setlocale LC_ALL ceil);
+use POSIX qw(setlocale LC_ALL floor);
 use POSIX;
 use Tk;
 use Tk::Scrollbar;
@@ -35,7 +35,7 @@ binmode(STDERR, ":utf8");
 my @char_attributes = ("Charisma", "Körperliche Verfassung", "Reaktion", "Verstand", "Willenskraft");
 my @char_skills = (
     "Athletik", "Ausweichen", "Einschüchtern", "Fahren", "Hacken", "Heimlichkeit",
-    "Hardware", "Kämpfen", "Provozieren", "Recherche", "Software", "Überreden", "Überleben", "Wahrnehmung"
+    "Hardware", "Kämpfen", "Provozieren", "Recherche", "Software", "Überleben", "Überreden", "Wahrnehmung"
 );
 
 my %char_skill_attributes = (
@@ -57,8 +57,8 @@ my %char_skill_attributes = (
 );
 
 my @avatar_skills = (
-    "Athletik", "Craften", "Diebeskunst", "Fahren", "Fernkampf", "Heimlichkeit",
-    "Heilen", "Inspirieren", "Konstitution", "Machtnutzung", "Nahkampf",
+    "Athletik", "Craften", "Diebeskunst", "Fahren", "Fernkampf", "Heilen",
+    "Heimlichkeit", "Inspirieren", "Konstitution", "Machtnutzung", "Nahkampf",
     "Überreden", "Verspotten", "Wahrnehmung", "Zeugs sammeln"
 );
 my @avatar_skills_light = (
@@ -79,8 +79,8 @@ my $scrolled_main_area  = $mw->Scrolled(
 
 my $content_container = $scrolled_main_area->Subwidget('scrolled');
 	 
-my $link_description = '© 2026 Andreas & Manuela Balthasar GbR - www.andreasbalthasar.de';
-my $target_url = 'https://www.andreasbalthasar.de';
+my $link_description = '© 2026 Andreas Balthasar - uniworld-rpg.de';
+my $target_url = 'https://uniworld-rpg.de';
 
 my @default_font_config_list = $content_container->fontActual('TkDefaultFont');
 my %link_font_spec_hash = @default_font_config_list;
@@ -131,6 +131,7 @@ $btn_frame->Button(-text => 'Charakter bearbeiten', -command => \&edit_character
 $btn_frame->Button(-text => 'Charakter löschen', -command => \&delete_character)->pack(-fill => 'x', -pady=>1);
 $btn_frame->Button(-text => 'Charaktere speichern', -command => \&save_characters)->pack(-fill => 'x', -pady=>1);
 $btn_frame->Button(-text => 'Exportieren als PDF', -command => \&export_to_pdf)->pack(-fill => 'x', -pady=>1);
+$btn_frame->Button(-text => 'Exportieren für HTML-Bogen', -command => \&export_to_json)->pack(-fill => 'x', -pady=>1);
 $btn_frame->Button(-text => 'Beenden', -command => \&exit_program)->pack(-fill => 'x', -pady=>1);
 
 
@@ -552,7 +553,7 @@ sub main_avatar_creation {
     my $wunden_label = $avatar_dialog->Label(-text => "Wunden")->grid(-row => $row, -column => 2, -sticky => 'w');
     my $wunden_entry = $avatar_dialog->Entry(-width => 2, -textvariable => 0)->grid(-row => $row, -column => 2, -sticky => 'n');
     my $wundenmax_label = $avatar_dialog->Label(-width => 3, -text => "von ")->grid(-row => $row, -column => 2, -sticky => 'e', -ipadx => 35);
-    my $wundenmax_entry = $avatar_dialog->Entry(-width => 2, -textvariable => 4)->grid(-row => $row, -column => 2, -sticky => 'e');
+    my $wundenmax_entry = $avatar_dialog->Entry(-width => 2, -textvariable => 5)->grid(-row => $row, -column => 2, -sticky => 'e');
 	
 	# Machttränke
 	my $machttraenke_label = $avatar_dialog->Label(-text => "Tägliche Machttränke")->grid(-row => $row, -column => 3, -sticky => 'w');
@@ -821,7 +822,7 @@ sub main_avatar_creation {
 	$parademod_entry->bind('<KeyRelease>', sub { update_parade_avatar($char_skills, $char_skill_mods, $char_attributes, $char_attr_mods, $parade_basis, $parademod_entry, $paradegs_entry, $avatar_skills_values{'Nahkampf'}, $skill_mods{'Nahkampf'}); });
     my $paradeges_label = $avatar_dialog->Label(-text => "Gesamt")->grid(-row => 7, -column => 3, -sticky => 'n');
 
-	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), aufgerundet");
+	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), angerundet");
 	$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 	
     my $robust_label = $avatar_dialog->Label(-text => "Robustheit")->grid(-row => 8, -column => 2, -sticky => 'w');
@@ -1214,7 +1215,7 @@ sub edit_avatar {
 		my $paradegs_entry = $edit_dialog->Label(-width => 3)->grid(-row => 7, -column => 3, -sticky => 'e');
 		$parademod_entry->bind('<KeyRelease>', sub { update_parade_avatar($char_skills, $char_skill_mods, $char_attributes, $char_attr_mods, $parade_basis, $parademod_entry, $paradegs_entry, $avatar_skills_values{'Nahkampf'}, $skill_mods{'Nahkampf'}); });
 
-		$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), aufgerundet");
+		$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), abgerundet");
 		$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 		
 		#Robustheit
@@ -2670,7 +2671,7 @@ sub main_character_creation {
     $paradegs_entry = $dialog->Label(-width => 3, -text => 3)->grid(-row => 6, -column => 3, -sticky => 'e', -ipadx=> 10);
 	$parademod_entry->bind('<KeyRelease>', sub { update_parade(\%skills, \%skill_mods, \%attributes, \%attr_mods, $parade_basis, $parademod_entry, $paradegs_entry); });
 	
-	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Kämpfen + Mod) / 2) + ((Reaktion + Mod) / 4) + ((Ausweichen + Mod) / 2), aufgerundet");
+	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Kämpfen + Mod) / 2) + ((Ausweichen + Mod) / 2), abgerundet");
 	$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 
     my $robust_label = $dialog->Label(-text => "Robustheit")->grid(-row => 7, -column => 2, -sticky => 'w');
@@ -3504,7 +3505,7 @@ sub edit_character {
             $paradegs_entry->configure(-text => $parade_basis->cget('-text'));
         }
     });
-	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Kämpfen + Mod) / 2) + ((Reaktion + Mod) / 4) + ((Ausweichen + Mod) / 2), aufgerundet");
+	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Kämpfen + Mod) / 2) + ((Ausweichen + Mod) / 2), abgerundet");
 	$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 	
 	# Robustheit
@@ -3602,7 +3603,7 @@ sub edit_character {
     )->grid(-row => 22, -column => 2);
 
     # Skills
-	my $skill_label = $dialog->Label(-text => "Fertigkeiten")->grid(-row => $row, -column => 0, -columnspan => 2);
+	my $skill_label = $dialog->Label(-text => "Fertigkeiten")->grid(-row => $row -1, -column => 0, -columnspan => 2);
 
 	foreach my $skill (@char_skills) {
 		$skills_fields{$skill}{label} = $dialog->Label(-text => $skill)->grid(-row => $row, -column => 0, -sticky => 'w');
@@ -4768,8 +4769,8 @@ sub add_character_to_pdf {
     my $reaktion_val = ($dummy_attributes{'Reaktion'} // 4); $reaktion_val = 12+$1 if $reaktion_val=~/^12\+(\d+)$/; $reaktion_val += ($dummy_attr_mods{'Reaktion'} // 0);
     my $ausw_val = ($dummy_skills{'Ausweichen'} // 0); $ausw_val = 12+$1 if $ausw_val=~/^12\+(\d+)$/; $ausw_val += ($dummy_skill_mods{'Ausweichen'} // 0);
     my $kv_val = ($dummy_attributes{'Körperliche Verfassung'} // 4); $kv_val = $1 + $2 if($kv_val =~ /^(\d+)\+(\d+)/);
-    my $parade_basis_val = ceil(2 + ($kampf_val/2) + ($reaktion_val/4) + ($ausw_val/2));
-	my $robust_basis_val = ceil(2 + ($kv_val / 2) + ($dummy_attr_mods{'Körperliche Verfassung'} || 0));
+    my $parade_basis_val = floor(2 + ($kampf_val/2) + ($ausw_val/2));
+	my $robust_basis_val = floor(2 + ($kv_val / 2) + ($dummy_attr_mods{'Körperliche Verfassung'} || 0));
     my $online_basis_val = ($kv_val + ($dummy_attr_mods{'Körperliche Verfassung'} || 0)) / 2;
 	my $online_gesamt = $online_basis_val + ($char->{onlinemod} // 0);
 	$online_basis_val =~ s/\./,/;
@@ -4784,7 +4785,7 @@ sub add_character_to_pdf {
     # Avatare Tabelle
     add_pdf_heading($pdf, $page_ref, \$y_lower_left, $layout, $fonts, "Avatare", 12);
     my @avatar_list_widths = (100, 100);
-    # ... (Code zum Füllen der Avatare-Tabelle) ...
+    # Code zum Füllen der Avatare-Tabelle
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left, data => ['Avatar', 'Spielwelt'], widths => \@avatar_list_widths, header => 1);
     my $avs = $char->{avatars} // [];
     foreach my $av (@$avs) {
@@ -4805,9 +4806,9 @@ sub add_character_to_pdf {
 
     # --- Panzerung Tabelle (Links) ---
     add_pdf_heading($pdf, $page_ref, \$y_lower_left, $layout, $fonts, "Panzerung", 12);
-    my @armor_widths_char_left = (60, 90, 30, 220); # Breite für Anmerkungen
+    my @armor_widths_char_left = (60, 90, 30, 30, 60, 60, 220);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left,
-                   data => ['Ort', 'Name', 'P', 'Anmerkungen'], widths => \@armor_widths_char_left, header => 1);
+                   data => ['Ort', 'Name', 'P', 'KV', 'Gewicht', 'Kosten', 'Anmerkungen'], widths => \@armor_widths_char_left, header => 1);
     foreach my $loc ('Kopf', 'Torso', 'Arme', 'Beine') {
         my $p = (exists $char->{panzer} && ref $char->{panzer} eq 'HASH' && exists $char->{panzer}{$loc}) ? $char->{panzer}{$loc} : {};
         $p = {} unless ref $p eq 'HASH';
@@ -4815,7 +4816,7 @@ sub add_character_to_pdf {
         draw_table_row(
             pdf          => $pdf, page_ref    => $page_ref, y_pos_ref   => \$y_lower_left,
             layout       => $layout, fonts       => $fonts, x_start     => $x_lower_left,
-            data         => [$loc, $p->{name} // '', $p->{panzerung} // 0, $p->{anmerkungen} // ''],
+            data         => [$loc, $p->{name} // '', $p->{panzerung} // 0, $p->{kv} // 'W0', $p->{gewicht} // 0, $p->{kosten} // 0, $p->{anmerkungen} // ''],
             widths       => \@armor_widths_char_left
         );
     }
@@ -5025,26 +5026,25 @@ sub add_avatar_to_pdf {
     my $nahkampf_mod_av = $avatar->{skill_mods}{'Nahkampf'} // 0;
     my $konst_val_av = $avatar->{skills}{'Konstitution'} // 0; $konst_val_av = 12+$1 if $konst_val_av =~ /^12\+(\d+)$/;
     my $konst_mod_av = $avatar->{skill_mods}{'Konstitution'} // 0;
-    my $parade_basis_av = ceil(2 + (($nahkampf_val_av + $nahkampf_mod_av) / 2));
-    my $robust_basis_av = ceil(2 + (($konst_val_av + $konst_mod_av) / 2));
+    my $parade_basis_av = floor(2 + (($nahkampf_val_av + $nahkampf_mod_av) / 2));
+    my $robust_basis_av = floor(2 + (($konst_val_av + $konst_mod_av) / 2));
 
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Wert', 'Basis', 'Mod', 'Gesamt'], widths => \@derived_widths_av2, header => 1);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Bewegung', 6, $bewegung_mod_av, (6 + $bewegung_mod_av).'"'], widths => \@derived_widths_av2);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Parade', $parade_basis_av, $parade_mod_av, ($parade_basis_av + $parade_mod_av)], widths => \@derived_widths_av2);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Robustheit', $robust_basis_av, $robust_mod_av, ($robust_basis_av + $robust_mod_av)], widths => \@derived_widths_av2);
     $y_lower_left_av -= $layout->{line_height}; # Abstand
-
     # --- Panzerung Tabelle (Links unten) ---
     add_pdf_heading($pdf, $page_ref, \$y_lower_left_av, $layout, $fonts, "Panzerung", 12);
-    my @armor_widths_av_left = (60, 90, 30, 220);
-    draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Ort', 'Name', 'P', 'Anmerkungen'], widths => \@armor_widths_av_left, header => 1);
+    my @armor_widths_av_left = (60, 90, 30, 60, 60, 220);
+    draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Ort', 'Name', 'P', 'Gewicht', 'Kosten', 'Anmerkungen'], widths => \@armor_widths_av_left, header => 1);
     foreach my $loc ('Kopf', 'Torso', 'Arme', 'Beine') {
          my $p = $avatar->{panzer}{$loc} // {};
          $p = {} unless ref $p eq 'HASH';
          draw_table_row(
             pdf          => $pdf, page_ref    => $page_ref, y_pos_ref   => \$y_lower_left_av,
             layout       => $layout, fonts       => $fonts, x_start     => $x_lower_left_av,
-            data         => [$loc, $p->{name}//'', $p->{panzerung}//0, $p->{anmerkungen}//''],
+            data         => [$loc, $p->{name}//'', $p->{panzerung}//0, $p->{gewicht}//0, $p->{kosten}//0, $p->{anmerkungen}//''],
             widths       => \@armor_widths_av_left
          );
     }
@@ -5263,7 +5263,7 @@ sub select_character {
 
 sub manage_wissen_skills {
     my ($punktetyp, $parent_dialog, $wissen_skills_ref, $verstand_used_ref, $verstand_max, $skillpunkt_entry) = @_;
-	$verstand_max = ceil($verstand_max);
+	$verstand_max = floor($verstand_max);
     my $wissen_popup = $parent_dialog->Toplevel();
 	my $scrolled_area = $wissen_popup->Scrolled(
         'Frame',
@@ -5610,7 +5610,7 @@ sub update_display_avatar {
 
 			if($value =~ /^12\+(\d+)$/)
 			{
-				my $total_value = ceil($1 + $mod_value + $chatttr + ($chskill_value / 2)) + $chskill_mod;
+				my $total_value = floor($1 + $mod_value + $chatttr + ($chskill_value / 2)) + $chskill_mod;
 				if ($total_value == 0)
 				{
 					$entry->configure(-text => "W12");
@@ -5632,7 +5632,7 @@ sub update_display_avatar {
 					$mod_value += ($chskill_value - 12) / 2;
 					$chskill_value = 12;
 				}
-				my $total_value = ceil($chatttr + $mod_value);
+				my $total_value = floor($chatttr + $mod_value);
 				if ($total_value == 0)
 				{
 					$entry->configure(-text => "W$chskill_value");
@@ -5654,7 +5654,7 @@ sub update_display_avatar {
 
 		if($value =~ /^12\+(\d+)$/)
 		{
-			my $total_value = ceil($1 + $mod_value + $chatttr);
+			my $total_value = floor($1 + $mod_value + $chatttr);
 			if ($total_value == 0)
 			{
 				$entry->configure(-text => "W12");
@@ -5670,7 +5670,7 @@ sub update_display_avatar {
 		}
 		else
 		{
-			my $total_value = ceil($chatttr + $mod_value);
+			my $total_value = floor($chatttr + $mod_value);
 			if ($total_value == 0)
 			{
 				$entry->configure(-text => "W$value");
@@ -5735,7 +5735,7 @@ sub update_parade {
 	$ausw+= ($skill_mods_ref->{'Ausweichen'} || 0);
 
     # Basiswert berechnen und aufrunden
-    my $basis = ceil(2 + ($kampf/2) + ($reaktion/4) + ($ausw/2));
+    my $basis = floor(2 + ($kampf/2) + ($ausw/2));
 
     # Modifikator aus dem Entry-Feld holen
     my $mod = $parademod_entry->get() || 0;
@@ -5771,7 +5771,7 @@ sub update_parade_avatar {
 		$ausweichen = $char_skills_ref->{'Ausweichen'};
 	}
 	
-	my $basis = ceil(2 + (($nahkampf + $nk_mod) / 2) + (($ausweichen + $char_skill_mods_ref->{'Ausweichen'}) / 2) + get_bonus_attr($char_attributes_ref->{'Reaktion'}, $char_attr_mods_ref->{'Reaktion'}, 8));
+	my $basis = floor(2 + (($nahkampf + $nk_mod) / 2) + (($ausweichen + $char_skill_mods_ref->{'Ausweichen'}) / 2) + get_bonus_attr($char_attributes_ref->{'Reaktion'}, $char_attr_mods_ref->{'Reaktion'}, 8));
 	my $mod = $parademod_entry->get() || 0;
 	$parade_basis->configure(-text => $basis);
     $paradegs_entry->configure(-text => $basis + $mod);
@@ -5789,7 +5789,7 @@ sub update_robust {
 	my $kv = $attributes_ref->{'Körperliche Verfassung'} || 0;
 	$kv = $1 + $2 if($kv =~ /^(\d+)\+(\d+)/);
     # Basiswert berechnen und aufrunden
-    my $basis = ceil(2 + ($kv / 2) + ($attr_mods_ref->{'Körperliche Verfassung'} || 0));
+    my $basis = floor(2 + ($kv / 2) + ($attr_mods_ref->{'Körperliche Verfassung'} || 0));
 
     # Modifikator aus dem Entry-Feld holen
     my $mod = $robustmod_entry->get() || 0;
@@ -5811,7 +5811,7 @@ sub update_robust_avatar {
 
 	$konst = $1 + $2 if($konst =~ /^(\d+)\+(\d+)/);
     # Basiswert berechnen und aufrunden
-    my $basis = ceil(2 + ($konst / 2) + ($konst_mod || 0));
+    my $basis = floor(2 + ($konst / 2) + ($konst_mod || 0));
 
     # Modifikator aus dem Entry-Feld holen
     my $mod = $robustmod_entry->get() || 0;
@@ -6211,4 +6211,314 @@ sub open_notizen_window {
         $hash_ref->{notizen} = $content;
         $notizen_window->destroy;
     })->pack(-pady => 10);
+}
+
+# --- HAUPTFUNKTION für den JSON-Export (HTML Charakterbogen) ---
+sub export_to_json {
+    unless (defined $current_character) {
+        $mw->messageBox( -type => 'Ok', -icon => 'info', -title => 'Charakter wählen',
+                         -message => "Bitte zuerst einen Charakter auswählen." );
+        return;
+    }
+
+    my $default_filename = ($current_character->{name} // 'charakter');
+    $default_filename =~ s/[\\\/:\*\?"<>\|]+/_/g;
+    $default_filename .= ".json";
+
+    my $filename = $mw->getSaveFile(
+        -title        => "Charakter für interaktiven HTML Bogen exportieren",
+        -initialdir   => '.',
+        -initialfile  => $default_filename,
+        -defaultextension => '.json',
+        -filetypes    => [ ['JSON Dateien', '.json'], ['Alle Dateien', '*'] ]
+    );
+    return unless(defined $filename);
+    $filename .= '.json' unless $filename =~ /\.json$/i;
+
+    my $char = $current_character;
+    my @main_data;
+
+    # Hilfsfunktion für die W-Schreibweise
+    my $format_w = sub {
+        my $val = shift;
+        return '' if !$val || $val eq '0';
+        return ($val =~ /^\d+$/) ? "W$val" : "W$val";
+    };
+
+    # Hilfsfunktion für den "Gesamt"-Würfelwert
+    my $calc_gesamt = sub {
+        my ($val, $mod) = @_;
+        $val //= 0; $mod //= 0;
+        return '' if $val eq '0' || $val eq '';
+        my $display_val = $format_w->($val);
+        if ($display_val =~ /^W12\+(\d+)$/) {
+            my $total = $1 + $mod;
+            return $total > 0 ? "W12+$total" : ($total < 0 ? "W12$total" : "W12");
+        } else {
+            return $mod > 0 ? "$display_val+$mod" : ($mod < 0 ? "$display_val$mod" : $display_val);
+        }
+    };
+
+    # 1. Hauptcharakter Grunddaten (Page 1)
+    push @main_data, $char->{name} // "";
+    push @main_data, $char->{rank} // "Anfänger";
+    push @main_data, $char->{xp} // 0;
+    push @main_data, $char->{xp_unused} // 0;
+    push @main_data, $char->{location} // "";
+    push @main_data, $char->{alter} // "";
+    push @main_data, $char->{lebensstil} // "";
+    push @main_data, $char->{vermoegen} // 0;
+    push @main_data, $char->{description} // "";
+
+    # 2. Attribute (Wert, Mod, Gesamt)
+    foreach my $attr ("Charisma", "Körperliche Verfassung", "Reaktion", "Verstand", "Willenskraft") {
+        my $val = $char->{attributes}{$attr} // 4;
+        my $mod = $char->{attr_mods}{$attr} // 0;
+        push @main_data, $format_w->($val);
+        push @main_data, $mod;
+        push @main_data, $calc_gesamt->($val, $mod);
+    }
+
+    # 3. Fertigkeiten (Wert, Mod, Gesamt)
+    my @html_skills = ("Athletik", "Ausweichen", "Einschüchtern", "Fahren", "Hacken", "Hardware", "Heimlichkeit", "Kämpfen", "Provozieren", "Recherche", "Software", "Überleben", "Überreden", "Wahrnehmung");
+    foreach my $skill (@html_skills) {
+        my $val = $char->{skills}{$skill} // 0;
+        my $mod = $char->{skill_mods}{$skill} // 0;
+        my $display_val = $format_w->($val);
+        push @main_data, $display_val eq 'W0' ? '' : $display_val;
+        push @main_data, $mod;
+        push @main_data, $calc_gesamt->($val, $mod);
+    }
+
+    # 4. Bennies Checkboxen + Max
+    my $bennies = $char->{bennies} // 0;
+    for (1..5) { push @main_data, ($_ <= $bennies ? JSON::true : JSON::false); }
+    push @main_data, $char->{benniesmax} // 0;
+
+    # 5. Wunden Checkboxen + Max
+    my $wunden = $char->{wunden} // 0;
+    for (1..5) { push @main_data, ($_ <= $wunden ? JSON::true : JSON::false); }
+    push @main_data, $char->{wundenmax} // 0;
+
+    # 6. Abgeleitete Werte (Basis, Mod, Gesamt)
+    push @main_data, '6"';
+    push @main_data, $char->{bewegungmod} // 0;
+    push @main_data, (6 + ($char->{bewegungmod}//0)) . '"';
+
+    my $kampf_val = $char->{skills}{'Kämpfen'} || 0; $kampf_val = $1 + $2 if $kampf_val =~ /^(\d+)\+(\d+)/;
+    my $ausw_val = $char->{skills}{'Ausweichen'} || 0; $ausw_val = $1 + $2 if $ausw_val =~ /^(\d+)\+(\d+)/;
+    my $parade_basis_val = floor(2 + ($kampf_val/2) + ($ausw_val/2));
+    push @main_data, $parade_basis_val;
+    push @main_data, $char->{parademod} // 0;
+    push @main_data, $parade_basis_val + ($char->{parademod} // 0);
+
+    my $kv_val = $char->{attributes}{'Körperliche Verfassung'} || 0; $kv_val = $1 + $2 if $kv_val =~ /^(\d+)\+(\d+)/;
+    my $robust_basis_val = floor(2 + ($kv_val / 2) + ($char->{attr_mods}{'Körperliche Verfassung'} || 0));
+    push @main_data, $robust_basis_val;
+    push @main_data, $char->{robustmod} // 0;
+    push @main_data, $robust_basis_val + ($char->{robustmod} // 0);
+
+    my $online_basis_val = ($kv_val + ($char->{attr_mods}{'Körperliche Verfassung'} || 0)) / 2;
+    my $online_gesamt = $online_basis_val + ($char->{onlinemod} // 0);
+    $online_basis_val =~ s/\./,/;
+    $online_gesamt =~ s/\./,/;
+    push @main_data, "$online_basis_val h";
+    push @main_data, $char->{onlinemod} // 0;
+    push @main_data, "$online_gesamt h";
+
+    # 7. Textareas (Handicaps, Talente)
+    push @main_data, join("\n", @{$char->{handicaps} // []});
+    push @main_data, join("\n", @{$char->{talents} // []});
+
+    # 8. Wissen (Page 2)
+    my $wissen_str = "";
+    foreach my $w (sort keys %{$char->{wissen}}) {
+        next if ($char->{wissen}{$w}//0) eq '0';
+        $wissen_str .= "- Wissen ($w) (".$format_w->($char->{wissen}{$w}).")\n";
+    }
+    push @main_data, $wissen_str;
+
+    # 9. Ausrüstung & VR
+    push @main_data, join("\n", @{$char->{items} // []});
+    push @main_data, join("\n", @{$char->{vr_ausruestung} // []});
+
+    # 10. Panzerung
+    foreach my $loc ('Kopf', 'Torso', 'Arme', 'Beine') {
+        my $p = $char->{panzer}{$loc} // {};
+        push @main_data, $p->{name} // '';
+        push @main_data, $p->{panzerung} // '';
+        push @main_data, $p->{kv} // '';
+        push @main_data, $p->{gewicht} // '';
+        push @main_data, $p->{kosten} // '';
+        push @main_data, $p->{anmerkungen} // '';
+    }
+
+    # 11. Waffen
+    foreach my $loc ('rechte Hand', 'linke Hand', 'Ersatz1', 'Ersatz2') {
+        my $w = $char->{waffen}{$loc} // {};
+        push @main_data, $w->{name} // '';
+        push @main_data, $w->{schaden} // '';
+        push @main_data, $w->{gewicht} // '';
+        push @main_data, $w->{kosten} // '';
+        push @main_data, $w->{kv} // '';
+        push @main_data, $w->{rw} // '';
+        push @main_data, $w->{pb} // '';
+        push @main_data, $w->{fr} // '';
+        push @main_data, $w->{schuss} // '';
+        push @main_data, $w->{flaeche} // '';
+        push @main_data, $w->{anmerkungen} // '';
+    }
+
+    # 12. Notizen
+    push @main_data, ""; # Generator hat keine Notizen für Main-Char
+
+    # 13. Hauptavatar Grunddaten trennen und ans Ende hängen (Page 3)
+    my $haupt_av = {};
+    my @game_avatars = ();
+
+    foreach my $av (@{$char->{avatars} // []}) {
+        if ($av->{main}) {
+            $haupt_av = $av;
+        } else {
+            push @game_avatars, $av;
+        }
+    }
+    
+    push @main_data, $haupt_av->{name} // '';
+    push @main_data, $haupt_av->{description} // $haupt_av->{notizen} // '';
+
+
+    # ==========================
+    # Avatare generieren
+    # ==========================
+    my @avatars_data;
+    foreach my $av (@game_avatars) {
+        my @av_data;
+        
+        # 1. Grunddaten
+        push @av_data, $av->{name} // '';
+        push @av_data, $av->{level} // 0;
+        push @av_data, $av->{rank} // 'Anfänger';
+        push @av_data, $av->{game} // '';
+        push @av_data, $av->{gilden} // '';
+        push @av_data, $av->{xp} // 0;
+        push @av_data, $av->{steigerungspunkte} // 0;
+        push @av_data, $av->{heiltrank} // 0;
+        push @av_data, $av->{machttrank} // 0;
+        push @av_data, $av->{mp} // 0;
+        push @av_data, $av->{vermoegen} // 0;
+        push @av_data, $av->{description} // '';
+
+        # 2. Avatar-Fertigkeiten
+        my @av_skills = ("Athletik", "Craften", "Diebeskunst", "Fahren", "Fernkampf", "Heilen", "Heimlichkeit", "Inspirieren", "Konstitution", "Machtnutzung", "Nahkampf", "Überreden", "Verspotten", "Wahrnehmung", "Zeugs sammeln");
+        foreach my $skill (@av_skills) {
+            my $val = $av->{skills}{$skill} // 0;
+            my $mod = $av->{skill_mods}{$skill} // 0;
+            my $display_val = $format_w->($val);
+            push @av_data, $display_val eq 'W0' ? '' : $display_val;
+            push @av_data, $mod;
+            push @av_data, $calc_gesamt->($val, $mod);
+        }
+
+        # 3. Avatar Wissen
+        my $av_wissen_str = "";
+        foreach my $w (sort keys %{$av->{wissen}}) {
+            next if ($av->{wissen}{$w}//0) eq '0';
+            $av_wissen_str .= "- Wissen ($w) (".$format_w->($av->{wissen}{$w}).")\n";
+        }
+        push @av_data, $av_wissen_str;
+
+        # 4. Bennies
+        my $av_bennies = $av->{bennies} // 0;
+        for (1..5) { push @av_data, ($_ <= $av_bennies ? JSON::true : JSON::false); }
+        push @av_data, $av->{benniesmax} // 0;
+
+        # 5. Wunden
+        my $av_wunden = $av->{wunden} // 0;
+        for (1..5) { push @av_data, ($_ <= $av_wunden ? JSON::true : JSON::false); }
+        push @av_data, $av->{wundenmax} // 0;
+
+        # 6. Abgeleitete Werte (Avatar)
+        push @av_data, '6"';
+        push @av_data, $av->{bewegungmod} // 0;
+        push @av_data, (6 + ($av->{bewegungmod}//0)) . '"';
+
+        my $nahkampf = $av->{skills}{'Nahkampf'} || 0; $nahkampf = $1 + $2 if $nahkampf =~ /^(\d+)\+(\d+)/;
+        my $ausw = $char->{skills}{'Ausweichen'} || 0; $ausw = $1 + $2 if $ausw =~ /^(\d+)\+(\d+)/;
+        my $reaktion = $char->{attributes}{'Reaktion'} || 4; $reaktion = $1 + $2 if $reaktion =~ /^(\d+)\+(\d+)/;
+        my $rea_mod = $char->{attr_mods}{'Reaktion'} || 0;
+        my $rea_bonus = ($reaktion < 8) ? $rea_mod : (($reaktion - 8) / 2) + $rea_mod;
+        
+        my $nk_mod = $av->{skill_mods}{'Nahkampf'} || 0;
+        my $ausw_mod = $char->{skill_mods}{'Ausweichen'} || 0;
+        my $parade_basis_av = floor(2 + (($nahkampf + $nk_mod)/2) + (($ausw + $ausw_mod)/2) + $rea_bonus);
+
+        push @av_data, $parade_basis_av;
+        push @av_data, $av->{parademod} // 0;
+        push @av_data, $parade_basis_av + ($av->{parademod} // 0);
+
+        my $konst_val_av = $av->{skills}{'Konstitution'} || 0; $konst_val_av = $1 + $2 if $konst_val_av =~ /^(\d+)\+(\d+)/;
+        my $konst_mod_av = $av->{skill_mods}{'Konstitution'} || 0;
+        my $robust_basis_av = floor(2 + (($konst_val_av + $konst_mod_av) / 2));
+        push @av_data, $robust_basis_av;
+        push @av_data, $av->{robustmod} // 0;
+        push @av_data, $robust_basis_av + ($av->{robustmod} // 0);
+
+        # 7. Handicaps & Talente
+        push @av_data, join("\n", @{$av->{handicaps} // []});
+        push @av_data, join("\n", @{$av->{talents} // []});
+
+        # 8. Avatar Panzerung
+        foreach my $loc ('Kopf', 'Torso', 'Arme', 'Beine') {
+            my $p = $av->{panzer}{$loc} // {};
+            push @av_data, $p->{name} // '';
+            push @av_data, $p->{panzerung} // '';
+            push @av_data, $p->{gewicht} // '';
+            push @av_data, $p->{kosten} // '';
+            push @av_data, $p->{anmerkungen} // '';
+        }
+
+        # 9. Avatar Waffen
+        foreach my $loc ('rechte Hand', 'linke Hand', 'Ersatz1', 'Ersatz2') {
+            my $w = $av->{waffen}{$loc} // {};
+            push @av_data, $w->{name} // '';
+            push @av_data, $w->{schaden} // '';
+            push @av_data, $w->{gewicht} // '';
+            push @av_data, $w->{kosten} // '';
+            push @av_data, $w->{rw} // '';
+            push @av_data, $w->{pb} // '';
+            push @av_data, $w->{fr} // '';
+            push @av_data, $w->{schuss} // '';
+            push @av_data, $w->{flaeche} // '';
+            push @av_data, $w->{anmerkungen} // '';
+        }
+
+        # 10. Mächte, Inventarslots, Inventar & Notizen
+        push @av_data, join("\n", @{$av->{maechte} // []});
+        push @av_data, $av->{inventarslots} // 10;
+        push @av_data, join("\n", @{$av->{items} // []});
+        push @av_data, $av->{notizen} // '';
+
+        push @avatars_data, \@av_data;
+    }
+
+    # Finales JSON-Struktur zusammenbauen
+    my $export_data = {
+        main => \@main_data,
+        avatars => \@avatars_data
+    };
+
+    eval {
+        open my $fh, '>:encoding(UTF-8)', $filename or die "Could not open file '$filename': $!";
+        my $json_out = JSON->new->utf8(0)->pretty->encode($export_data);
+        print $fh $json_out;
+        close $fh;
+    };
+    if ($@) {
+        $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'JSON Export Fehler',
+                         -message => "Konnte die JSON-Datei nicht erstellen:\n$@" );
+    } else {
+        $mw->messageBox( -type => 'Ok', -icon => 'info', -title => 'JSON Export erfolgreich',
+                         -message => "Charakter wurde erfolgreich als\n'$filename'\nfür den interaktiven Bogen exportiert." );
+    }
 }
