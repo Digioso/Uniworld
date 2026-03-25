@@ -22,13 +22,14 @@ Lade dir StrawberryPerl von https://www.strawberryperl.com herunter. Bitte insta
 Ich habe die Erfahrung gemacht, dass andere Installationspfade ggf. zu Problemen führen.<br>
 Öffne eine Administrator Eingabeaufforderung.<br>
 Führe dann die folgenden Befehle aus:<br>
-cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
+cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen musst. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
 cpan PDF::API2<br>
 cpan Browser::Open<br>
 set LC_ALL=C<br>
 set LANG=C<br>
 cpanm https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/patched_cpan_modules/Tk-804.036_001.tar.gz<br>
 cpan Tk::Balloon<br><br>
+Danach solltest du das Tool mit einem Doppelklick auf die ucm.pl starten können.<br>
 
 Ubuntu Linux:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
@@ -36,7 +37,7 @@ cd verzeichnis-mit-den-dateien<br>
 chmod +x ucm.pl<br>
 sudo apt update<br>
 sudo apt -y install perl perl-tk libbrowser-open-perl<br>
-sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
+sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen musst. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
 sudo cpan PDF::API2<br>
 sudo cpan Tk::Balloon<br>
 Anschließend kann die ucm.pl Datei ausgeführt werden. Z.B. über den Dateibrowser mit einem Rechtsklick und dann 'Run as Program'.<br><br>
@@ -45,7 +46,7 @@ Andere Linux-Distributionen:<br>
 Führe die folgenden Befehle in einem Terminal aus:<br>
 cd verzeichnis-mit-den-dateien<br>
 chmod +x ucm.pl<br>
-sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen muss. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
+sudo cpan CPAN (hier kann es sein, dass du ein paar Sachen beim ersten Start bestätigen musst. Z.B. falls du einen Proxy verwendest. Im Normalfall alles auf Default lassen).<br>
 sudo cpan PDF::API2<br>
 sudo cpan Browser::Open<br>
 export LC_ALL=C<br>
