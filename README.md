@@ -28,7 +28,7 @@ cpan Browser::Open<br>
 set LC_ALL=C<br>
 set LANG=C<br>
 cpanm https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/patched_cpan_modules/Tk-804.036_001.tar.gz<br>
-cpan Tk::Balloon<br><br>
+cpan Tk::Balloon<br>
 Danach solltest du das Tool mit einem Doppelklick auf die ucm.pl starten können.<br>
 
 Ubuntu Linux:<br>
