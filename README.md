@@ -1,12 +1,12 @@
 # Uniworld Character Manager
 Ein Character-Manager/Generator für das Pen & Paper System Uniworld.
 
-# Windows Download:
+# Windows Download
 <br>
 Für Windows gibt es eine ausführbare Datei bei den Releases: https://github.com/Digioso/Uniworld/releases/latest<br>
 Bitte die Bilder aus dem Release ebenfalls herunterladen und im gleichen Verzeichnis platzieren.<br>
 
-# Installation:
+# Installation
 
 Falls du das Skript lieber direkt ausführen möchtest:<br>
 Lade den Quellcode und die Bilder von Github herunter und platziere sie in einem Verzeichnis deiner Wahl.
