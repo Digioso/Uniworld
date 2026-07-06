@@ -5308,12 +5308,24 @@ sub manage_wissen_skills {
                 $wissen_entry->add('Label', -text => "Wissensfertigkeit:")->pack();
                 my $wissen_input = $wissen_entry->add('Entry')->pack();
                 my $response = $wissen_entry->Show();
-                if (defined $response && $response eq "OK" && $wissen_input->get() ne "") {
+                if (defined $response && $response eq "OK" && $wissen_input->get() ne "")
+				{
                     my $new_wissen = $wissen_input->get();
+					if (exists $wissen_skills_ref->{$new_wissen})
+					{
+						$wissen_dialog->messageBox(
+							-type    => 'Ok',
+							-icon    => 'warning',
+							-title   => 'Bereits vorhanden',
+							-message => "Die Wissensfertigkeit '$new_wissen' existiert bereits!"
+						);
+						$wissen_entry->destroy();
+						return;
+					}
                     $wissen_skills_ref->{$new_wissen} = 4;
                     if ($verstand_max != -1 && $$verstand_used_ref < $verstand_max) {
                         $$verstand_used_ref++;
-						$verstand_label->configure(-text => "Verstand-Punkte: $$verstand_used_ref von $verstand_max");
+                        $verstand_label->configure(-text => "Verstand-Punkte: $$verstand_used_ref von $verstand_max");
                     } else {
                         $skillpunkt_entry->configure(-text => $skillpunkt_entry->cget('-text') - 1);
                         $skill_label->configure(-text => "$punktetyp: " . $skillpunkt_entry->cget('-text'));
@@ -5322,6 +5334,9 @@ sub manage_wissen_skills {
                         $$verstand_used_ref = update_wissen_list($punktetyp, $wissen_popup, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used_ref, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label);
                     });
                 }
+                
+                $wissen_entry->destroy();
+                
             } else {
                 print_wissen_keine_punkte_error($punktetyp, $wissen_dialog, $$verstand_used_ref, $verstand_max, $skillpunkt_entry);
             }
@@ -5360,10 +5375,11 @@ sub print_wissen_keine_punkte_error {
 
 sub update_wissen_list {
     my ($punktetyp, $wissen_popup, $wissen_dialog, $wissen_skills_ref, $wissen_row, $verstand_used, $verstand_max, $skillpunkt_entry, $skill_label, $verstand_label) = @_;
-
-    foreach my $child ($wissen_dialog->children) {
-        my %gridinfo = $child->gridInfo;
-        $child->gridForget() if (defined $gridinfo{-row} && $gridinfo{-row} >= $wissen_row);
+    foreach my $widget ($wissen_dialog->gridSlaves()) {
+        my %info = $widget->gridInfo();
+        if (defined $info{'-row'} && $info{'-row'} >= $wissen_row) {
+            $widget->destroy();
+        }
     }
 
     my @sorted_wissen = sort keys %$wissen_skills_ref;
