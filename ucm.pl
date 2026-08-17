@@ -39,21 +39,30 @@ my @char_skills = (
 );
 
 my %char_skill_attributes = (
-    "Athletik"       => "Körperliche Verfassung",
-    "Ausweichen"     => "Reaktion",
-    "Einschüchtern"  => "Willenskraft",
-    "Fahren"         => "Reaktion",
-    "Hacken"         => "Verstand",
-    "Heimlichkeit"   => "Reaktion",
-    "Hardware"       => "Verstand",
-    "Kämpfen"        => "Reaktion",
-	"Provozieren"    => "Charisma",
-    "Recherche"  	 => "Willenskraft",
-    "Software"       => "Verstand",
-    "Überreden"      => "Charisma",
-    "Überleben"      => "Körperliche Verfassung",
-    "Wahrnehmung"    => "Reaktion",
-    "Wissen"         => "Verstand"
+    lang => {
+        "Athletik"      => "Körperliche Verfassung",
+        "Ausweichen"    => "Reaktion",
+        "Einschüchtern" => "Willenskraft",
+        "Fahren"        => "Reaktion",
+        "Hacken"        => "Verstand",
+        "Heimlichkeit"  => "Reaktion",
+        "Hardware"      => "Verstand",
+        "Kämpfen"       => "Reaktion",
+        "Provozieren"   => "Charisma",
+        "Recherche"     => "Willenskraft",
+        "Software"      => "Verstand",
+        "Überreden"     => "Charisma",
+        "Überleben"     => "Körperliche Verfassung",
+        "Wahrnehmung"   => "Reaktion",
+        "Wissen"        => "Verstand",
+    },
+    kurz => {
+        "Körperliche Verfassung" => "KV",
+        "Reaktion"               => "RE",
+        "Willenskraft"           => "WIL",
+        "Charisma"               => "CH",
+        "Verstand"               => "VER",
+    }
 );
 
 my @avatar_skills = (
@@ -2825,8 +2834,8 @@ sub main_character_creation {
 	$skills{Überreden} = 4;
 	$skills{Wahrnehmung} = 4;
 	foreach my $skill (@char_skills) {
-		$skills_fields{$skill}{label} = $dialog->Label(-text => $skill)->grid(-row => $row, -column => 0, -sticky => 'w');
-		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{$skill}");
+		$skills_fields{$skill}{label} = $dialog->Label(-text => "$skill ($char_skill_attributes{kurz}{$char_skill_attributes{lang}{$skill}})")->grid(-row => $row, -column => 0, -sticky => 'w');
+		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{lang}{$skill}");
 		$skills_fields{$skill}{skillmod_label} = $dialog->Label(-width => 3, -text => "Mod")->grid(-row => $row, -column => 0, -sticky => 'n');
 		$skills_fields{$skill}{skillmod_entry} = $dialog->Entry(-width => 3, -text => 0, -validate => 'key', -validatecommand => sub {
 			my $new_value = shift;
@@ -2877,7 +2886,7 @@ sub main_character_creation {
 
 				# Kosten bestimmen
 				my $cost = 1;
-				my $linked_attribute = $char_skill_attributes{$skill};
+				my $linked_attribute = $char_skill_attributes{lang}{$skill};
 				my $attribute_value_str = $attributes{$linked_attribute};
 
 				# Numerische Werte für den Vergleich
@@ -2923,7 +2932,7 @@ sub main_character_creation {
 
 				# Kostenrückerstattung bestimmen
 				my $refund = 1;
-				my $linked_attribute = $char_skill_attributes{$skill};
+				my $linked_attribute = $char_skill_attributes{lang}{$skill};
 				my $attribute_value_str = $attributes{$linked_attribute};
 
 				# Numerische Werte für den Vergleich
@@ -3606,8 +3615,8 @@ sub edit_character {
 	my $skill_label = $dialog->Label(-text => "Fertigkeiten")->grid(-row => $row -1, -column => 0, -columnspan => 2);
 
 	foreach my $skill (@char_skills) {
-		$skills_fields{$skill}{label} = $dialog->Label(-text => $skill)->grid(-row => $row, -column => 0, -sticky => 'w');
-		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{$skill}");
+		$skills_fields{$skill}{label} = $dialog->Label(-text => "$skill ($char_skill_attributes{kurz}{$char_skill_attributes{lang}{$skill}})")->grid(-row => $row, -column => 0, -sticky => 'w');
+		$balloon->attach($skills_fields{$skill}{label}, -balloonmsg => "Verknüpftes Attribut: $char_skill_attributes{lang}{$skill}");
 		$skills_fields{$skill}{skillmod_label} = $dialog->Label(-width => 3, -text => "Mod")->grid(-row => $row, -column => 0, -sticky => 'n');
 		$skills_fields{$skill}{skillmod_entry} = $dialog->Entry(-width => 3, -text => $skill_mods{$skill} || 0, -validate => 'key', -validatecommand => sub {
 			my $new_value = shift;
@@ -3658,7 +3667,7 @@ sub edit_character {
 				
 				# Kosten bestimmen
 				my $cost = 1;
-				my $linked_attribute = $char_skill_attributes{$skill};
+				my $linked_attribute = $char_skill_attributes{lang}{$skill};
 				my $attribute_value_str = $attributes{$linked_attribute};
 
 				# Numerische Werte für den Vergleich
@@ -3704,7 +3713,7 @@ sub edit_character {
 
 				# Kostenrückerstattung bestimmen
 				my $refund = 1;
-				my $linked_attribute = $char_skill_attributes{$skill};
+				my $linked_attribute = $char_skill_attributes{lang}{$skill};
 				my $attribute_value_str = $attributes{$linked_attribute};
 				
 				# Numerische Werte für den Vergleich
