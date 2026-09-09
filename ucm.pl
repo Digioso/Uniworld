@@ -572,7 +572,7 @@ sub main_avatar_creation {
 	my $parade_basis = $avatar_dialog->Label(-width => 3)->grid(-row => 7, -column => 2, -sticky => 'n');
 	my $parademod_entry = $avatar_dialog->Entry(-width => 3, -text => 0, -validate => 'key', -validatecommand => sub {
         my $new_value = shift;
-        return 1 if $new_value =~ /^[\+-]?\d*$/;  # Allow digits and optional leading minus & plus sign
+        return 1 if $new_value =~ /^[\+-]?\d*$/;
         return 0;
     })->grid(-row => 7, -column => 3, -sticky => 'w');
 	my $paradegs_entry = $avatar_dialog->Label(-width => 3)->grid(-row => 7, -column => 3, -sticky => 'e');
@@ -1014,7 +1014,11 @@ sub main_avatar_creation {
 
     # Inventarslots
     my $inventarslots_label  = $avatar_dialog->Label(-text => "Inventarslots")->grid(-row => $row - 1, -column => 2);
-    my $inventarslots_entry = $avatar_dialog->Label(-text => 10)->grid(-row => $row - 1, -column => 3, -sticky => 'w');
+    my $inventarslots_entry = $avatar_dialog->Entry(-width => 3, -text => 10, -validate => 'key', -validatecommand => sub {
+        my $new_value = shift;
+        return 1 if($new_value =~ /^\d+$/);
+        return 0;
+    })->grid(-row => $row - 1, -column => 3, -sticky => 'w');
 
     # Talents
     my $talent_frame = create_talent_frame($talentpunkt_entry, $avatar_dialog, $row);
@@ -1098,7 +1102,7 @@ sub main_avatar_creation {
 					machttrank => 0,
 					heiltrank => 0,
 					steigerungspunkte => 0,
-					inventarslots => 10,
+					inventarslots => $inventarslots_entry->get(),
 					notizen => $notizen{notizen},
 					bennies     => $bennies_entry->get(),
 					benniesmax     => $benniesmax_entry->get(),
@@ -1453,8 +1457,8 @@ sub edit_avatar {
 												}
 											}
 											elsif($bonus eq 'ItemSlot')
-											{
-												$inventarslots_entry->configure(-text => $inventarslots_entry->cget('-text') + $boni{ItemSlot});
+											{	$robustmod_entry->get();
+												$inventarslots_entry->configure(-textvariable => $inventarslots_entry->get() + $boni{ItemSlot});
 												if($boni{ItemSlot} > 1)
 												{
 													$boni_msg .= "\n$boni{ItemSlot} weitere Inventarslots";
@@ -1899,7 +1903,11 @@ sub edit_avatar {
 
 		# Inventarslots
 		my $inventarslots_label  = $edit_dialog->Label(-text => "Inventarslots")->grid(-row => $row - 1, -column => 2);
-		$inventarslots_entry = $edit_dialog->Label(-text => $avatar->{inventarslots})->grid(-row => $row - 1, -column => 3, -sticky => 'w');
+		$inventarslots_entry = $edit_dialog->Entry(-width => 3, -textvariable => \$avatar->{inventarslots}, -validate => 'key', -validatecommand => sub {
+			my $new_value = shift;
+			return 1 if($new_value =~ /^\d+$/);
+			return 0;
+		})->grid(-row => $row - 1, -column => 3, -sticky => 'w');
 
 		# Talents
 		my $talent_frame = create_talent_frame($sp_entry, $edit_dialog, $row, $avatar->{talents});
@@ -1919,7 +1927,7 @@ sub edit_avatar {
 		my $items_button_frame = $edit_dialog->Frame()->grid(-row => $row, -column => 3, -sticky => 'w');
 		$items_button_frame->Button(
 			-text => "+",
-			-command => sub { add_items_item($edit_dialog, $items_listbox, $inventarslots_entry->cget(-text), 'Gegenstand') }
+			-command => sub { add_items_item($edit_dialog, $items_listbox, $inventarslots_entry->get(), 'Gegenstand') }
 		)->pack(-side => 'top');
 		$items_button_frame->Button(
 			-text => "-",
@@ -1984,7 +1992,7 @@ sub edit_avatar {
 				$avatar->{wunden} = $wunden_entry->get();
 				$avatar->{wundenmax} = $wundenmax_entry->get();
 				$avatar->{bewegungmod} = $bewegungmod_entry->get();
-				$avatar->{inventarslots} = $inventarslots_entry->cget('-text');
+				$avatar->{inventarslots} = $inventarslots_entry->get();
 				$avatar->{steigerungspunkte} = $sp_entry->cget('-text');
 				$avatar->{parademod} = $parademod_entry->get();
 				$avatar->{robustmod} = $robustmod_entry->get();
