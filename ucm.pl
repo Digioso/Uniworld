@@ -831,7 +831,7 @@ sub main_avatar_creation {
 	$parademod_entry->bind('<KeyRelease>', sub { update_parade_avatar($char_skills, $char_skill_mods, $char_attributes, $char_attr_mods, $parade_basis, $parademod_entry, $paradegs_entry, $avatar_skills_values{'Nahkampf'}, $skill_mods{'Nahkampf'}); });
     my $paradeges_label = $avatar_dialog->Label(-text => "Gesamt")->grid(-row => 7, -column => 3, -sticky => 'n');
 
-	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), angerundet");
+	$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über W6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), angerundet");
 	$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 	
     my $robust_label = $avatar_dialog->Label(-text => "Robustheit")->grid(-row => 8, -column => 2, -sticky => 'w');
@@ -1228,7 +1228,7 @@ sub edit_avatar {
 		my $paradegs_entry = $edit_dialog->Label(-width => 3)->grid(-row => 7, -column => 3, -sticky => 'e');
 		$parademod_entry->bind('<KeyRelease>', sub { update_parade_avatar($char_skills, $char_skill_mods, $char_attributes, $char_attr_mods, $parade_basis, $parademod_entry, $paradegs_entry, $avatar_skills_values{'Nahkampf'}, $skill_mods{'Nahkampf'}); });
 
-		$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über D6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), abgerundet");
+		$balloon->attach($parade_basis, -balloonmsg => "Basis: 2 + ((Nahkampf + Mod) / 2) + ((Reaktion Charakter über W6 + Mod) / 2) + ((Ausweichen Charakter + Mod) / 2), abgerundet");
 		$balloon->attach($paradegs_entry, -balloonmsg => "Gesamt: Basis + Modifikator");
 		
 		#Robustheit
@@ -1335,52 +1335,52 @@ sub edit_avatar {
 										{ level => 48, total_xp => 19012500, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 49, total_xp => 20213000, bonus => { Gold => 4200 } }, # + 4200 Gold
 										{ level => 50, total_xp => 21463000, bonus => { Verteidigung => 1 } }, # + 1 auf Parade oder Robustheit
-										{ level => 51, total_xp => 22763500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über d10)
+										{ level => 51, total_xp => 22763500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über W10)
 										{ level => 52, total_xp => 24115500, bonus => { Trank => 1 } }, # Alle 24h gratis ein Heil- oder Machttrank
 										{ level => 53, total_xp => 25520000, bonus => { Gold => 4400 } }, # + 4400 Gold
 										{ level => 54, total_xp => 26978000, bonus => { ItemSlot => 1 } }, # + 1 Item-Slot
 										{ level => 55, total_xp => 28490500, bonus => { Gold => 4600 } }, # + 4600 Gold
-										{ level => 56, total_xp => 30058500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf d10+)
+										{ level => 56, total_xp => 30058500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf W10+)
 										{ level => 57, total_xp => 31683000, bonus => { Gold => 4800 } }, # + 4800 Gold
 										{ level => 58, total_xp => 33365000, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 59, total_xp => 35105500, bonus => { Gold => 5000 } }, # + 5000 Gold
 										{ level => 60, total_xp => 36905500, bonus => { Kosmetikitem => 1, Rank => 'Heroisch' } }, # Ein besonderes kosmetisches Item
-										{ level => 61, total_xp => 38766000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über d10)
+										{ level => 61, total_xp => 38766000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über W10)
 										{ level => 62, total_xp => 40688000, bonus => { Heiltrank => 1 } }, # Alle 24h gratis ein Heiltrank
 										{ level => 63, total_xp => 42672500, bonus => { Verteidigung => 1 } }, # + 1 auf Parade oder Robustheit
 										{ level => 64, total_xp => 44720500, bonus => { ItemSlot => 1 } }, # + 1 Item-Slot
 										{ level => 65, total_xp => 46833000, bonus => { Gold => 5200 } }, # + 5200 Gold
-										{ level => 66, total_xp => 49011000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf d10+)
+										{ level => 66, total_xp => 49011000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf W10+)
 										{ level => 67, total_xp => 51255500, bonus => { Gold => 5400 } }, # + 5400 Gold
 										{ level => 68, total_xp => 53567500, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 69, total_xp => 55948000, bonus => { Gold => 5600 } }, # + 5600 Gold
 										{ level => 70, total_xp => 58398000, bonus => { Verteidigung => 1 } }, # + 1 auf Parade oder Robustheit
-										{ level => 71, total_xp => 60918500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über d10)
+										{ level => 71, total_xp => 60918500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über W10)
 										{ level => 72, total_xp => 63510500, bonus => { Trank => 1 } }, # Alle 24h gratis ein Heil- oder Machttrank
 										{ level => 73, total_xp => 66175000, bonus => { Gold => 5800 } }, # + 5800 Gold
 										{ level => 74, total_xp => 68913000, bonus => { ItemSlot => 1 } }, # + 1 Item-Slot
 										{ level => 75, total_xp => 71725500, bonus => { Gold => 6000 } }, # + 6000 Gold
-										{ level => 76, total_xp => 74613500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf d10+)
+										{ level => 76, total_xp => 74613500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf W10+)
 										{ level => 77, total_xp => 77578000, bonus => { Gold => 6200 } }, # + 6200 Gold
 										{ level => 78, total_xp => 80620000, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 79, total_xp => 83740500, bonus => { Gold => 6400 } }, # + 6400 Gold
 										{ level => 80, total_xp => 86940500, bonus => { Kosmetikitem => 1, Rank => 'Legendär' } }, # Ein besonderes kosmetisches Item
-										{ level => 81, total_xp => 90221000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über d10)
+										{ level => 81, total_xp => 90221000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über W10)
 										{ level => 82, total_xp => 93583000, bonus => { Heiltrank => 1 } }, # Alle 24h gratis ein Heiltrank
 										{ level => 83, total_xp => 97027500, bonus => { Verteidigung => 1 } }, # + 1 auf Parade oder Robustheit
 										{ level => 84, total_xp => 100555500, bonus => { ItemSlot => 1 } }, # + 1 Item-Slot
 										{ level => 85, total_xp => 104168000, bonus => { Gold => 6600 } }, # + 6600 Gold
-										{ level => 86, total_xp => 107866000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf d10+)
+										{ level => 86, total_xp => 107866000, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf W10+)
 										{ level => 87, total_xp => 111650500, bonus => { Gold => 6800 } }, # + 6800 Gold
 										{ level => 88, total_xp => 115522500, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 89, total_xp => 119483000, bonus => { Gold => 7000 } }, # + 7000 Gold
 										{ level => 90, total_xp => 123533000, bonus => { Verteidigung => 1 } }, # + 1 auf Parade oder Robustheit
-										{ level => 91, total_xp => 127673500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über d10)
+										{ level => 91, total_xp => 127673500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (über W10)
 										{ level => 92, total_xp => 131905500, bonus => { Trank => 1 } }, # Alle 24h gratis ein Heil- oder Machttrank
 										{ level => 93, total_xp => 136230000, bonus => { Gold => 7500 } }, # + 7500 Gold
 										{ level => 94, total_xp => 140648000, bonus => { ItemSlot => 1 } }, # + 1 Item-Slot
 										{ level => 95, total_xp => 145160500, bonus => { Gold => 8000 } }, # + 8000 Gold
-										{ level => 96, total_xp => 149768500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf d10+)
+										{ level => 96, total_xp => 149768500, bonus => { Steigerungspunkte => 2 } }, # 1 Talentpunkt oder zwei Fertigkeitspunkte... (auf W10+)
 										{ level => 97, total_xp => 154473000, bonus => { Gold => 9000 } }, # + 9000 Gold
 										{ level => 98, total_xp => 159275000, bonus => { Angriffsart => 1 } }, # +1 auf eine der folgenden Angriffsarten...
 										{ level => 99, total_xp => 164175500, bonus => { Gold => 10000 } }, # + 10000 Gold
@@ -4875,7 +4875,13 @@ sub add_character_to_pdf {
 
 # --- Funktion zum Hinzufügen eines Avatars (Angepasst an Charakter-Layout) ---
 sub add_avatar_to_pdf {
-    my ($pdf, $avatar, $page, $y_pos, $fonts, $layout) = @_;
+    my ($pdf, $avatar, $char, $page, $y_pos, $fonts, $layout) = @_;
+
+    # Falls add_avatar_to_pdf noch mit den alten 6 Parametern aufgerufen wird:
+    if (!defined $layout) {
+        ($pdf, $avatar, $page, $y_pos, $fonts, $layout) = @_;
+        $char = $current_character;
+    }
 
     my $page_ref = \$page;
     my $y_pos_ref = \$y_pos;
@@ -4997,31 +5003,23 @@ sub add_avatar_to_pdf {
     my @skill_widths_av = (150, 40, 40, 150);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av,
                    data => ['Fertigkeit', 'Wert', 'Mod', 'Gesamt'], widths => \@skill_widths_av, header => 1);
-    foreach my $skill_name (@avatar_skills) { # Verwende @avatar_skills
-        my $skill_val = $avatar->{skills}{$skill_name} // 0;
-        my $skill_mod = $avatar->{skill_mods}{$skill_name} // 0;
-        my $display_val = format_dice($skill_val);
-        my $display_mod = ($skill_mod > 0 ? "+$skill_mod" : $skill_mod < 0 ? "$skill_mod" : "0");
-		my $gesamt = $display_val;
-		if($display_val =~ /W12\+(\d+)$/)
-		{
-			my $value = $1 + $skill_mod;
-			if($value > 0)
-			{
-				$gesamt = "W12+$value";
-			}
-			else
-			{
-				$gesamt = "W12$value";
-			}
-		}
-		else
-		{
-			$gesamt = "$display_val$display_mod" if($display_mod ne 0);
-		}
-        draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av,
-                        data => [$skill_name, $display_val, $display_mod, $gesamt], widths => \@skill_widths_av);
-    }
+    foreach my $skill_name (@avatar_skills) {
+    my $skill_val = $avatar->{skills}{$skill_name} // 0;
+    my $skill_mod = $avatar->{skill_mods}{$skill_name} // 0;
+    my $display_val = format_dice($skill_val);
+    my $display_mod = ($skill_mod > 0 ? "+$skill_mod" : $skill_mod < 0 ? "$skill_mod" : "0");
+    
+    # Korrekter Gesamt-Wert unter Einbeziehung des Charakters:
+    my $gesamt = calc_avatar_skill_gesamt(
+        $skill_val, $skill_mod, $skill_name,
+        $current_character->{attributes}, $current_character->{attr_mods},
+        $current_character->{skills},     $current_character->{skill_mods}
+    );
+    $gesamt = $display_val if (!defined $gesamt || $gesamt eq '');
+
+    draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av,
+                    data => [$skill_name, $display_val, $display_mod, $gesamt], widths => \@skill_widths_av);
+	}
 	if (exists $avatar->{wissen} && ref $avatar->{wissen} eq 'HASH') {
         foreach my $wissen_name (sort keys %{$avatar->{wissen}}) {
              my $wissen_val = $avatar->{wissen}{$wissen_name} // 0;
@@ -5035,15 +5033,34 @@ sub add_avatar_to_pdf {
 	  # --- Abgeleitete Werte (Avatar, Rechte Spalte) ---
     add_pdf_heading($pdf, $page_ref, \$y_lower_left_av, $layout, $fonts, "Abgeleitete Werte", 12);
     my @derived_widths_av2 = (100, 50, 50, 50);
+
     # Werte holen und berechnen
-    my $parade_mod_av = $avatar->{parademod} // 0;
-    my $robust_mod_av = $avatar->{robustmod} // 0;
+    my $parade_mod_av   = $avatar->{parademod}   // 0;
+    my $robust_mod_av   = $avatar->{robustmod}   // 0;
     my $bewegung_mod_av = $avatar->{bewegungmod} // 0;
-    my $nahkampf_val_av = $avatar->{skills}{'Nahkampf'} // 0; $nahkampf_val_av = 12+$1 if $nahkampf_val_av =~ /^12\+(\d+)$/;
+
+    # Nahkampf des Avatars
+    my $nahkampf_val_av = $avatar->{skills}{'Nahkampf'} // 0;
+    $nahkampf_val_av = 12 + $1 if $nahkampf_val_av =~ /^12\+(\d+)$/;
     my $nahkampf_mod_av = $avatar->{skill_mods}{'Nahkampf'} // 0;
-    my $konst_val_av = $avatar->{skills}{'Konstitution'} // 0; $konst_val_av = 12+$1 if $konst_val_av =~ /^12\+(\d+)$/;
+
+    # Ausweichen des Charakters
+    my $ausw_val = ($char && $char->{skills}) ? ($char->{skills}{'Ausweichen'} // 0) : 0;
+    $ausw_val = 12 + $1 if $ausw_val =~ /^12\+(\d+)$/;
+    my $ausw_mod = ($char && $char->{skill_mods}) ? ($char->{skill_mods}{'Ausweichen'} // 0) : 0;
+
+    # Reaktion des Charakters (Bonus ab W8)
+    my $rea_val = ($char && $char->{attributes}) ? ($char->{attributes}{'Reaktion'} // 4) : 4;
+    my $rea_mod = ($char && $char->{attr_mods})   ? ($char->{attr_mods}{'Reaktion'} // 0) : 0;
+    my $rea_bonus = get_bonus_attr($rea_val, $rea_mod, 8);
+
+    # Vollständige Parade-Berechnung wie im Tool und HTML-Export:
+    my $parade_basis_av = floor(2 + (($nahkampf_val_av + $nahkampf_mod_av) / 2) + (($ausw_val + $ausw_mod) / 2) + $rea_bonus);
+
+    # Konstitution des Avatars für Robustheit
+    my $konst_val_av = $avatar->{skills}{'Konstitution'} // 0;
+    $konst_val_av = 12 + $1 if $konst_val_av =~ /^12\+(\d+)$/;
     my $konst_mod_av = $avatar->{skill_mods}{'Konstitution'} // 0;
-    my $parade_basis_av = floor(2 + (($nahkampf_val_av + $nahkampf_mod_av) / 2));
     my $robust_basis_av = floor(2 + (($konst_val_av + $konst_mod_av) / 2));
 
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Wert', 'Basis', 'Mod', 'Gesamt'], widths => \@derived_widths_av2, header => 1);
@@ -5051,21 +5068,6 @@ sub add_avatar_to_pdf {
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Parade', $parade_basis_av, $parade_mod_av, ($parade_basis_av + $parade_mod_av)], widths => \@derived_widths_av2);
     draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Robustheit', $robust_basis_av, $robust_mod_av, ($robust_basis_av + $robust_mod_av)], widths => \@derived_widths_av2);
     $y_lower_left_av -= $layout->{line_height}; # Abstand
-    # --- Panzerung Tabelle (Links unten) ---
-    add_pdf_heading($pdf, $page_ref, \$y_lower_left_av, $layout, $fonts, "Panzerung", 12);
-    my @armor_widths_av_left = (60, 90, 30, 60, 60, 220);
-    draw_table_row(pdf=>$pdf, page_ref=>$page_ref, y_pos_ref=>\$y_lower_left_av, layout=>$layout, fonts=>$fonts, x_start=>$x_lower_left_av, data => ['Ort', 'Name', 'P', 'Gewicht', 'Kosten', 'Anmerkungen'], widths => \@armor_widths_av_left, header => 1);
-    foreach my $loc ('Kopf', 'Torso', 'Arme', 'Beine') {
-         my $p = $avatar->{panzer}{$loc} // {};
-         $p = {} unless ref $p eq 'HASH';
-         draw_table_row(
-            pdf          => $pdf, page_ref    => $page_ref, y_pos_ref   => \$y_lower_left_av,
-            layout       => $layout, fonts       => $fonts, x_start     => $x_lower_left_av,
-            data         => [$loc, $p->{name}//'', $p->{panzerung}//0, $p->{gewicht}//0, $p->{kosten}//0, $p->{anmerkungen}//''],
-            widths       => \@armor_widths_av_left
-         );
-    }
-    $y_lower_left_av -= $layout->{line_height};
 
     # --- Waffen Tabelle (Links unten) ---
     add_pdf_heading($pdf, $page_ref, \$y_lower_left_av, $layout, $fonts, "Waffen", 12);
@@ -5229,11 +5231,11 @@ sub export_to_pdf {
         if (exists $current_character->{avatars} && ref $current_character->{avatars} eq 'ARRAY') {
             foreach my $avatar (@{$current_character->{avatars}}) {
                 if (ref $avatar eq 'HASH') {
-					$current_page = $pdf->page();
-					$current_page->mediabox('A4');
-					$current_y = $layout{top_margin};
-                    # Funktion aufrufen, die aktuelle Seite und Y-Position übernimmt
-                    ($current_page, $current_y) = add_avatar_to_pdf($pdf, $avatar, $current_page, $current_y, \%fonts, \%layout);
+                    $current_page = $pdf->page();
+                    $current_page->mediabox('A4');
+                    $current_y = $layout{top_margin};
+                    # $current_character als 3. Parameter mitgeben:
+                    ($current_page, $current_y) = add_avatar_to_pdf($pdf, $avatar, $current_character, $current_page, $current_y, \%fonts, \%layout);
                 } else {
                     $mw->messageBox( -type => 'Ok', -icon => 'error', -title => 'PDF', -message => "Ungültiger Avatar-Eintrag gefunden: " . Dumper($avatar) );
                 }
@@ -5610,137 +5612,122 @@ sub update_display {
     }
 }
 
+sub calc_avatar_skill_gesamt {
+    my ($value, $mod_value, $skill, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods) = @_;
+
+    return '' if !defined $value || $value eq '' || $value eq '0';
+    $mod_value //= 0;
+
+    my $chskill = $skill;
+    my $attr = "";
+    if ($skill =~ /Nahkampf|Fernkampf/) {
+        $chskill = "Kämpfen";
+        $attr = "Reaktion";
+    }
+    elsif ($skill =~ /Heimlichkeit|Diebeskunst|Athletik|Fahren/) {
+        $attr = "Reaktion";
+    }
+    elsif ($skill =~ /Inspirieren|Überreden|Verspotten/) {
+        $attr = "Charisma";
+    }
+
+    if (defined $char_skills && exists $char_skills->{$chskill} && defined $char_skills->{$chskill}) {
+        my $chskill_val = $char_skills->{$chskill} // 0;
+        my $chskill_mod_val = $char_skill_mods->{$chskill} // 0;
+        my $chskill_bonus = get_bonus_skill($chskill_val, $chskill_mod_val, 6);
+
+        if ($chskill_bonus =~ /^(\d+).(\d+)$/) {
+            my $chskill_value = $1;
+            my $chskill_mod   = $2;
+
+            my $chatttr = 0;
+            if ($attr ne "" && defined $char_attributes) {
+                $chatttr = get_bonus_attr($char_attributes->{$attr} // 4, $char_attr_mods->{$attr} // 0, 8);
+            }
+
+            if ($value =~ /^12\+(\d+)$/) {
+                my $total_value = floor($1 + $mod_value + $chatttr + ($chskill_value / 2)) + $chskill_mod;
+                if ($total_value == 0) {
+                    return "W12";
+                } elsif ($total_value < 0) {
+                    return "W12$total_value";
+                } else {
+                    return "W12+$total_value";
+                }
+            } else {
+                $chskill_value += $value;
+                if ($chskill_value > 12) {
+                    $mod_value += ($chskill_value - 12) / 2;
+                    $chskill_value = 12;
+                }
+                my $total_value = floor($chatttr + $mod_value);
+                if ($total_value == 0) {
+                    return "W$chskill_value";
+                } elsif ($total_value > 0) {
+                    return "W$chskill_value+$total_value";
+                } else {
+                    return "W$chskill_value$total_value";
+                }
+            }
+        }
+    }
+    elsif ($attr ne "") {
+        my $chatttr = 0;
+        if (defined $char_attributes) {
+            $chatttr = get_bonus_attr($char_attributes->{$attr} // 4, $char_attr_mods->{$attr} // 0, 8);
+        }
+
+        if ($value =~ /^12\+(\d+)$/) {
+            my $total_value = floor($1 + $mod_value + $chatttr);
+            if ($total_value == 0) {
+                return "W12";
+            } elsif ($total_value < 0) {
+                return "W12$total_value";
+            } else {
+                return "W12+$total_value";
+            }
+        } else {
+            my $total_value = floor($chatttr + $mod_value);
+            if ($total_value == 0) {
+                return "W$value";
+            } elsif ($total_value > 0) {
+                return "W$value+$total_value";
+            } else {
+                return "W$value$total_value";
+            }
+        }
+    }
+    else {
+        if ($value =~ /^(\d+)$/) {
+            my $base_value = $1;
+            if ($mod_value == 0) {
+                return "W$base_value";
+            } elsif ($mod_value > 0) {
+                return "W$base_value+$mod_value";
+            } else {
+                return "W$base_value$mod_value";
+            }
+        } elsif ($value =~ /^12\+(\d+)$/) {
+            my $additional_value = $1;
+            my $total_value = $additional_value + $mod_value;
+            if ($total_value == 0) {
+                return "W12";
+            } elsif ($total_value < 0) {
+                return "W12$total_value";
+            } else {
+                return "W12+$total_value";
+            }
+        }
+    }
+
+    return "W$value";
+}
+
 sub update_display_avatar {
     my ($value, $mod_value, $entry, $skill, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods) = @_;
-    
-	my $chskill = $skill;
-	my $attr = "";
-	if($skill =~ /Nahkampf|Fernkampf/)
-	{
-		$chskill = "Kämpfen";
-		$attr = "Reaktion";
-	}
-	elsif($skill =~ /Heimlichkeit|Diebeskunst|Athletik|Fahren/)
-	{
-		$attr = "Reaktion";
-	}
-	elsif($skill =~ /Inspirieren|Überreden|Verspotten/)
-	{
-		$attr = "Charisma";
-	}
-	if(defined $char_skills->{$chskill})
-	{
-        # Gesamtbonus berechnen
-		
-		my $chskill_value = get_bonus_skill($char_skills->{$chskill}, $char_skill_mods->{$chskill}, 6);
-		if($chskill_value =~ /^(\d+).(\d+)$/)
-		{
-			$chskill_value  = $1;
-			my $chskill_mod = $2;
-			
-			my $chatttr = 0;
-			$chatttr = get_bonus_attr($char_attributes->{$attr}, $char_attr_mods->{$attr}, 8) if($attr ne "");
-
-			if($value =~ /^12\+(\d+)$/)
-			{
-				my $total_value = floor($1 + $mod_value + $chatttr + ($chskill_value / 2)) + $chskill_mod;
-				if ($total_value == 0)
-				{
-					$entry->configure(-text => "W12");
-				}
-				elsif ($total_value < 0)
-				{
-					$entry->configure(-text => "W12$total_value");
-				}
-				else
-				{
-					$entry->configure(-text => "W12+$total_value");
-				}
-			}
-			else
-			{
-				$chskill_value += $value;
-				if($chskill_value > 12)
-				{
-					$mod_value += ($chskill_value - 12) / 2;
-					$chskill_value = 12;
-				}
-				my $total_value = floor($chatttr + $mod_value);
-				if ($total_value == 0)
-				{
-					$entry->configure(-text => "W$chskill_value");
-				}
-				elsif ($total_value > 0)
-				{
-					$entry->configure(-text => "W$chskill_value+$total_value");
-				}
-				else
-				{
-					$entry->configure(-text => "W$chskill_value$total_value");
-				}
-			}
-		}
-    }
-	elsif($attr ne "")
-	{
-		my $chatttr = get_bonus_attr($char_attributes->{$attr}, $char_attr_mods->{$attr}, 8);
-
-		if($value =~ /^12\+(\d+)$/)
-		{
-			my $total_value = floor($1 + $mod_value + $chatttr);
-			if ($total_value == 0)
-			{
-				$entry->configure(-text => "W12");
-			}
-			elsif ($total_value < 0)
-			{
-				$entry->configure(-text => "W12$total_value");
-			}
-			else
-			{
-				$entry->configure(-text => "W12+$total_value");
-			}
-		}
-		else
-		{
-			my $total_value = floor($chatttr + $mod_value);
-			if ($total_value == 0)
-			{
-				$entry->configure(-text => "W$value");
-			}
-			elsif ($total_value > 0)
-			{
-				$entry->configure(-text => "W$value+$total_value");
-			}
-			else
-			{
-				$entry->configure(-text => "W$value$total_value");
-			}
-		}
-	}
-	else
-	{
-        if ($value =~ /^(\d+)$/) {
-			my $base_value = $1;
-			if ($mod_value == 0) {
-				$entry->configure(-text => "W$base_value");
-			} elsif ($mod_value > 0) {
-				$entry->configure(-text => "W$base_value+$mod_value");
-			} else {
-				$entry->configure(-text => "W$base_value$mod_value");
-			}
-		} elsif ($value =~ /^12\+(\d+)$/) {
-			my $additional_value = $1;
-			my $total_value = $additional_value + $mod_value;
-			if ($total_value == 0) {
-				$entry->configure(-text => "W12");
-			} elsif ($total_value < 0) {
-				$entry->configure(-text => "W12$total_value");
-			} else {
-				$entry->configure(-text => "W12+$total_value");
-			}
-		}
-    }
+    my $display = calc_avatar_skill_gesamt($value, $mod_value, $skill, $char_attributes, $char_attr_mods, $char_skills, $char_skill_mods);
+    $display = "W0" if (!defined $display || $display eq '');
+    $entry->configure(-text => $display);
 }
 
 sub update_parade {
@@ -6450,7 +6437,12 @@ sub export_to_json {
             my $display_val = $format_w->($val);
             push @av_data, $display_val eq 'W0' ? '' : $display_val;
             push @av_data, $mod;
-            push @av_data, $calc_gesamt->($val, $mod);
+            # Hier die neue Funktion mit den Werten des Hauptcharakters aufrufen:
+            push @av_data, calc_avatar_skill_gesamt(
+                $val, $mod, $skill,
+                $char->{attributes}, $char->{attr_mods},
+                $char->{skills},     $char->{skill_mods}
+            );
         }
 
         # 3. Avatar Wissen
